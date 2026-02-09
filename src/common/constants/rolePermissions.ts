@@ -1,0 +1,37 @@
+import { PERMISSIONS, Permission } from "./permissions";
+
+export type Role = "superAdmin" | "admin" | "user"
+
+export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+    superAdmin: [
+        PERMISSIONS.DASHBOARD,
+        PERMISSIONS.USERS,
+        PERMISSIONS.BOOKINGS,
+        PERMISSIONS.PRODUCTS,
+        PERMISSIONS.ORDERS,
+        PERMISSIONS.ANALYTICS,
+        PERMISSIONS.REPORTS,
+        PERMISSIONS.PAYMENTS,
+        PERMISSIONS.USER_SUPPORT,
+        PERMISSIONS.SETTINGS,
+        PERMISSIONS.ADMIN_USERS,
+        PERMISSIONS.ERROR_LOGS,
+        PERMISSIONS.API_LOGS,
+        PERMISSIONS.SECURITY,
+        PERMISSIONS.SERVER_HEALTH,
+    ],
+
+    admin: [
+        PERMISSIONS.DASHBOARD,
+        PERMISSIONS.USERS,
+        PERMISSIONS.BOOKINGS,
+        PERMISSIONS.PRODUCTS,
+        PERMISSIONS.ORDERS,
+        PERMISSIONS.PAYMENTS,
+        PERMISSIONS.USER_SUPPORT,
+    ],
+
+    user: [
+        PERMISSIONS.DASHBOARD,
+    ]
+} 

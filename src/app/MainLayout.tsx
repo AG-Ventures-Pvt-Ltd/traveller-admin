@@ -36,15 +36,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }, [user, pathname, router, isMounted]);
 
     const userMenuItems = [
-        {
-            key: 'profile',
-            label: (
-                <Space>
-                    <Users size={16} />
-                    Profile
-                </Space>
-            )
-        },
+
         {
             key: 'logout',
             label: (
@@ -62,7 +54,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     ];
 
     const handleUserMenuClick = ({ key }: { key: string }) => {
-        console.log('Menu clicked', key);
+       
         if (key === 'logout') {
             logout();
             router.push('/auth');
@@ -103,20 +95,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                             />
                         </div>
                         <Space size="middle">
-                            <Dropdown
-                                menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
-                                trigger={["click"]}
-                            >
-                                <div className="cursor-pointer flex items-center">
-                                    <Avatar size={32} className="!bg-blue-500 mr-2">
-                                        {(user?.name as string)?.[0]?.toUpperCase() || 'A'}
-                                    </Avatar>
-                                    <Space>
-                                        <span className="text-white">{(user?.name as string) || 'Admin User'}</span>
-                                        <ChevronDown size={16} className="text-gray-400" />
-                                    </Space>
-                                </div>
-                            </Dropdown>
+
+                            <Space>
+                                <span className="text-white uppercase font-semibold -mr-5 ">{(user?.name as string) || 'Admin User'}</span>
+                            </Space>
+                            
                         </Space>
                     </Header>
                     <Content className="flex-1 overflow-y-auto bg-white/5 backdrop-blur-md rounded-lg border border-white/10 m-6 p-6">

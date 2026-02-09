@@ -17,29 +17,7 @@ export interface Booking {
 
  // Using DUMMY_BOOKINGS data directly now
 
-export const callBokkings =  async (statusFilter,pagination )=>{
 
-    const { data: bookingsData, isLoading } =  useGetData({ 
-    key: ['bookings'],
-    url : api.getBookings,
-    params: {
-        status: statusFilter || undefined,
-        page: pagination.current,
-        limit: pagination.pageSize,
-        sort: 'createdAt',
-        order: 'desc',
-    }
-
-    
-
- 
-});
-
-
-    console.log(await bookingsData)
-    
-    
-}
 
 
 

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MenuItems } from './MenuItems';
 import { Layout, Typography, Menu } from 'antd';
-import { Shield, Settings } from 'lucide-react'
+import { Shield, Settings, LogOut } from 'lucide-react'
 
 
 const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
@@ -64,27 +64,31 @@ const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
                         return rest;
                     })}
                 />
-                <Menu
-                    mode="inline"
-                    selectedKeys={[selectedKey]}
-                    onClick={handleMenuClick}
-                    className="!bg-transparent !border-none mt-4"
-                    items={[{
-                        key: 'settings',
-                        icon: <Settings size={18} />,
-                        label: 'Settings',
-                    }]}
-                />
-                <Menu
-                    mode="inline"
-                    onClick={logout}
-                    className="!bg-transparent !border-none mt-4"
-                    items={[{
-                        key: 'settings',
-                        icon: <Settings size={18} />,
-                        label: 'logout',
-                    }]}
-                />
+                <div>
+                    <Menu
+                        mode="inline"
+                        selectedKeys={[selectedKey]}
+                        onClick={handleMenuClick}
+                        className="!bg-transparent !border-none mt-4"
+                        items={[{
+                            key: 'settings',
+                            icon: <Settings size={18} />,
+                            label: 'Settings',
+                        }]}
+                    />
+                    <Menu
+                        mode="inline"
+                        onClick={logout}
+                        className="!bg-transparent !border-none mt-4"
+                        items={[{
+                            key: 'settings',
+                            icon: <LogOut size={18} />,
+                            label: 'logout',
+                        }]}
+                    />
+
+                </div>
+                
             </div>
         </Sider>
     )

@@ -36,9 +36,7 @@ const Bookings = () => {
         }
      });
 
-     console.log('loading:', isLoading);
-console.log('bookingsData:', bookingsData);
-console.log('error:', error);
+    
 
 
     // const boookings_data = callBokkings(statusFilter, pagination)

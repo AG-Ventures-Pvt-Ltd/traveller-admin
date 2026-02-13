@@ -14,10 +14,13 @@ export const useGetData = ({ key, url, params = {} }: queryProps) => {
 
   return useQuery({
     queryKey: [...key, params],
-    queryFn:() => {
-      const  data  =   baseAPI.get(url, { params });
+    queryFn: () => {
+      const data = baseAPI.get(url, { params });
 
       return data;
-    }
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
   });
 };

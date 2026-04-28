@@ -1,110 +1,141 @@
 export interface Host {
-    name: string;
-    avatar: string;
+    _id: string;
+    fullName?: string;
+    username?: string;
+    email?: string;
+    avatar?: string;
+}
+
+export interface TripLocation {
+    city?: string;
+    state?: string;
+    country?: string;
+    address?: string;
+    coordinates?: number[];
+}
+
+export interface ItineraryDay {
+    day: number;
+    title?: string;
+    description?: string[];
+}
+
+export interface PricingTier {
+    label: string;
+    description?: string;
+    pricePerPerson: number;
+    maxQuantity?: number;
+    bookedQuantity?: number;
+}
+
+export interface AddOn {
+    label: string;
+    category?: string;
+    pricePerPerson: number;
+    maxQuantity?: number;
+    bookedQuantity?: number;
+}
+
+export interface Pricing {
+    currency: string;
+    isAdvanceBookingAllowed?: boolean;
+    advanceBookingPrice?: number;
+    pricings?: PricingTier[];
+    addOns?: AddOn[];
+}
+
+export interface Faq {
+    question: string;
+    answer: string;
+}
+
+export interface RefundTier {
+    daysBeforeCancellation: number;
+    refundPercentage: number;
+}
+
+export interface CancellationPolicy {
+    refundTiers?: RefundTier[];
+}
+
+export interface MeetingPointLocation {
+    name?: string;
+}
+
+export interface MeetingPoint {
+    location?: MeetingPointLocation;
+    pickupPrice?: number;
+}
+
+export interface DropPoint {
+    _id: string;
+    name?: string;
+}
+
+export interface TripBatch {
+    _id: string;
+    startDateTime: string;
+    endDateTime: string;
+    status: string;
+    totalSeats: number;
+    bookedSeats?: number;
+    externalBookedSeats?: number;
+    isCompleted?: boolean;
+    meetingPoint?: MeetingPoint[];
+    dropPoint?: DropPoint[];
+}
+
+export interface Review {
+    _id: string;
+    username: string;
+    rating: number;
+    review: string;
+    createdAt: string;
+}
+
+export interface Highlight {
+    title?: string;
+    image?: string;
+}
+
+export interface Accommodation {
+    name?: string;
+    address?: string;
+    images?: string[];
 }
 
 export interface Trip {
-    id: number;
+    _id: string;
     title: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    address: string;
-    host: Host;
-    isCompleted: boolean;
-    maxCapacity: number;
-    tags: string[];
-    price: number;
-    cancellationPolicy: string;
-    previewImages: string[];
-    joinedUsers: string[];
-    onShowPolicyModal?: () => void;
+    description?: string;
+    additionalInfo?: string;
+    status: string;
+    type?: string;
+    difficulty?: string;
+    rating?: number;
+    totalReviews?: number;
+    isFeatured?: boolean;
+    isFemaleOnly?: boolean;
+    bestTimeToVisit?: string;
+    slug?: string;
+    createdAt: string;
+    location?: TripLocation;
+    host?: Host;
+    tags?: string[];
+    category?: string[];
+    inclusions?: string[];
+    exclusions?: string[];
+    thingsToCarry?: string[];
+    highlights?: Highlight[];
+    accommodation?: Accommodation[];
+    tripImages?: string[];
+    itinerary?: ItineraryDay[];
+    batches?: TripBatch[];
+    pricing?: Pricing;
+    faqs?: Faq[];
+    cancellationPolicy?: CancellationPolicy;
+    metaTitle?: string;
+    metaDescription?: string;
+    views?: Record<string, number>;
+    shares?: Record<string, number>;
 }
-
-export const HOSTS: Host[] = [
-    { name: 'John Doe', avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=1890ff&color=fff' },
-    { name: 'Jane Smith', avatar: 'https://ui-avatars.com/api/?name=Jane+Smith&background=1890ff&color=fff' },
-    { name: 'Mike Brown', avatar: 'https://ui-avatars.com/api/?name=Mike+Brown&background=1890ff&color=fff' },
-    { name: 'Emily White', avatar: 'https://ui-avatars.com/api/?name=Emily+White&background=1890ff&color=fff' },
-    { name: 'Chris Green', avatar: 'https://ui-avatars.com/api/?name=Chris+Green&background=1890ff&color=fff' },
-];
-
-export const TAGS_LIST = [
-    ['Adventure', 'Nature'],
-    ['Culture', 'History'],
-    ['Beach', 'Relax'],
-    ['Hiking', 'Mountains'],
-    ['City', 'Nightlife'],
-    ['Wildlife'],
-    ['Photography'],
-    ['Food', 'Local'],
-    ['Luxury'],
-    ['Budget'],
-];
-
-export const ADDRESSES = [
-    '123 Main St, New York, USA',
-    '456 Beach Rd, Miami, USA',
-    '789 Hilltop, Denver, USA',
-    '321 Lakeview, Toronto, Canada',
-    '654 Old Town, Rome, Italy',
-    '987 Sakura St, Tokyo, Japan',
-    '111 Champs Elysees, Paris, France',
-    '222 Harbour, Sydney, Australia',
-    '333 Amazon Ave, Manaus, Brazil',
-    '444 Safari Rd, Nairobi, Kenya',
-];
-
-export const CANCELLATION_POLICIES = [
-    'Flexible',
-    'Moderate',
-    'Strict',
-    'Super Strict',
-];
-
-export const PREVIEW_IMAGES = [
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-    'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429',
-    'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99',
-    'https://images.unsplash.com/photo-1502082553048-f009c37129b9',
-    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-    'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429',
-    'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99',
-    'https://images.unsplash.com/photo-1502082553048-f009c37129b9',
-];
-
-export const JOINED_USERS = [
-    ['Alice', 'Bob'],
-    ['Charlie', 'Diana', 'Eve'],
-    ['Frank'],
-    ['Grace', 'Heidi', 'Ivan', 'Judy'],
-    ['Mallory'],
-    ['Oscar', 'Peggy'],
-    ['Sybil', 'Trent'],
-    ['Victor', 'Walter'],
-    ['Xavier'],
-    ['Yvonne', 'Zack'],
-];
-
-export const POLICY_DETAILS: Record<string, string[]> = {
-    'Flexible': [
-        'Full refund 1 day prior to arrival',
-        'Partial refund after that',
-        'No refund after trip starts'
-    ],
-    'Moderate': [
-        'Full refund 5 days prior to arrival',
-        'Partial refund after that',
-        'No refund after trip starts'
-    ],
-    'Strict': [
-        '50% refund up to 1 week before arrival',
-        'No refund after that'
-    ],
-    'Super Strict': [
-        'No refund after booking',
-        'Special cases may apply'
-    ]
-};

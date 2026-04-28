@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Home, Users, ShoppingCart, BarChart3, FileText, Shield, Package, CreditCard,
-  User, Headset, AlertTriangle, Activity, Server, Building2
+  User, Headset, AlertTriangle, Activity, Server, Building2, Settings
 } from 'lucide-react';
 import { PERMISSIONS } from '@/common/constants/permissions';
 
@@ -84,6 +84,12 @@ export const MenuItems = [
     icon: <Server size={18} />,
     label: 'Server Health',
     permission: PERMISSIONS.SERVER_HEALTH
+  },
+  {
+    key: 'configs',
+    icon: <Settings size={18} />,
+    label: 'App Config',
+    permission: PERMISSIONS.CONFIGS
   },
 
 ];

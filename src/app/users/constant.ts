@@ -60,21 +60,12 @@ export const USER_STATUS = {
 export type UserStatus = typeof USER_STATUS[keyof typeof USER_STATUS];
 
 export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  fullName: string;
+  _id: string;
+  username: string;
   email: string;
+  avatar: string | null;
   phone: string;
-  status: UserStatus;
-  role: UserRole;
-  plan: SubscriptionPlan;
-  country: string;
+  isEmailVerified: boolean;
   createdAt: string;
-  lastLogin: string | null;
-  isVerified: boolean;
-  totalOrders: number;
-  totalSpent: number;
-  avatar: string;
 }
 

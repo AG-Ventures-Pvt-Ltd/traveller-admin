@@ -1,112 +1,133 @@
-import { Space, Tooltip, Avatar, Badge, Button } from 'antd';
-import { Info, Calendar, MapPin, Trash2 } from 'lucide-react';
-import type { TableProps } from 'antd';
-import { formatDate, formatCurrency } from '../utils';
-import { Trip, Host } from '../constant';
+'use client';
 
-export const columns = (handleDeleteTrip: (trip: Trip) => void): TableProps<Trip>['columns'] => [
+import { Space, Avatar, Tag, Button, Tooltip } from 'antd';
+import { MapPin, Star, CheckCircle } from 'lucide-react';
+import type { TableProps } from 'antd';
+import { formatDate } from '../utils';
+import { Trip } from '../constant';
+
+const STATUS_COLORS: Record<string, string> = {
+    in_review: 'orange',
+    published: 'green',
+};
+
+const DIFFICULTY_COLORS: Record<string, string> = {
+    easy: 'green',
+    moderate: 'gold',
+    challenging: 'red',
+};
+
+interface ColumnOptions {
+    handlePublish: (trip: Trip) => void;
+}
+
+export const columns = ({ handlePublish }: ColumnOptions): TableProps<Trip>['columns'] => [
     {
         title: 'Title',
         dataIndex: 'title',
         key: 'title',
-        width: 180,
-        render: (text: string) => (
-            <Space>
-                <Info size={16} style={{ color: '#1890ff' }} />
-                <span style={{ fontWeight: 500 }}>{text}</span>
-            </Space>
-        )
-    },
-    {
-        title: 'Description',
-        dataIndex: 'description',
-        key: 'description',
-        width: 220,
+        width: 200,
         ellipsis: true,
-        render: (desc: string) => (
-            <Tooltip title={desc}><span>{desc.slice(0, 50)}{desc.length > 50 ? '...' : ''}</span></Tooltip>
-        )
+        render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
     },
     {
-        title: 'Start Date',
-        dataIndex: 'startDate',
-        key: 'startDate',
-        width: 120,
-        render: (date: string) => (
-            <Space><Calendar size={14} />{formatDate(date)}</Space>
+        title: 'Location',
+        dataIndex: 'location',
+        key: 'location',
+        width: 160,
+        render: (location: Trip['location']) => (
+            <Space>
+                <MapPin size={14} />
+                <span>{[location?.city, location?.country].filter(Boolean).join(', ') || '—'}</span>
+            </Space>
         ),
-        sorter: (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    },
-    {
-        title: 'End Date',
-        dataIndex: 'endDate',
-        key: 'endDate',
-        width: 120,
-        render: (date: string) => (
-            <Space><Calendar size={14} />{formatDate(date)}</Space>
-        ),
-        sorter: (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
-    },
-    {
-        title: 'Address',
-        dataIndex: 'address',
-        key: 'address',
-        width: 180,
-        render: (address: string) => (
-            <Space><MapPin size={14} />{address}</Space>
-        )
     },
     {
         title: 'Host',
         dataIndex: 'host',
         key: 'host',
-        width: 140,
-        render: (host: Host) => (
+        width: 150,
+        render: (host: Trip['host']) => host ? (
             <Space>
-                <Avatar src={host.avatar} size={32} style={{ backgroundColor: '#1890ff' }}>{host.name[0]}</Avatar>
-                <span>{host.name}</span>
+                <Avatar src={host.avatar} size={28} style={{ backgroundColor: '#1890ff' }}>
+                    {host.fullName?.[0]}
+                </Avatar>
+                <Tooltip title={host.email}>
+                    <span>{host.fullName || host.username}</span>
+                </Tooltip>
             </Space>
-        )
+        ) : '—',
     },
     {
-        title: 'Completed',
-        dataIndex: 'isCompleted',
-        key: 'isCompleted',
-        width: 105,
-        render: (isCompleted: boolean) => (
-            <Badge status={isCompleted ? 'success' : 'default'} text={isCompleted ? 'Yes' : 'No'} />
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        width: 110,
+        render: (status: string) => (
+            <Tag color={STATUS_COLORS[status] || 'default'}>
+                {status?.replace('_', ' ').toUpperCase()}
+            </Tag>
         ),
         filters: [
-            { text: 'Completed', value: 'true' },
-            { text: 'Not Completed', value: 'false' }
+            { text: 'In Review', value: 'in_review' },
+            { text: 'Published', value: 'published' },
         ],
-        onFilter: (value, record) => String(record.isCompleted) === value
+        onFilter: (value, record) => record.status === value,
     },
     {
-        title: 'Max Capacity',
-        dataIndex: 'maxCapacity',
-        key: 'maxCapacity',
-        width: 90,
-        align: 'center',
-        sorter: (a, b) => a.maxCapacity - b.maxCapacity
+        title: 'Type',
+        dataIndex: 'type',
+        key: 'type',
+        width: 110,
+        render: (type: string) => type ? (
+            <Tag>{type.replace('_', ' ')}</Tag>
+        ) : '—',
     },
     {
-        title: 'Price',
-        dataIndex: 'price',
-        key: 'price',
+        title: 'Difficulty',
+        dataIndex: 'difficulty',
+        key: 'difficulty',
+        width: 110,
+        render: (d: string) => d ? (
+            <Tag color={DIFFICULTY_COLORS[d] || 'default'}>{d.toUpperCase()}</Tag>
+        ) : '—',
+    },
+    {
+        title: 'Rating',
+        dataIndex: 'rating',
+        key: 'rating',
         width: 90,
-        render: (price: number) => (
-            <Space>{formatCurrency(price)}</Space>
+        render: (rating: number) => (
+            <Space>
+                <Star size={14} style={{ color: '#faad14' }} />
+                <span>{rating?.toFixed(1) ?? '0.0'}</span>
+            </Space>
         ),
-        sorter: (a, b) => a.price - b.price
+        sorter: (a, b) => (a.rating || 0) - (b.rating || 0),
+    },
+    {
+        title: 'Created',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        width: 110,
+        render: (date: string) => formatDate(date),
+        sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     },
     {
         title: 'Actions',
         key: 'actions',
         fixed: 'right',
-        width: 80,
-        render: (_, record) => (
-            <Button type="text" icon={<Trash2 size={16} />} danger onClick={() => handleDeleteTrip(record)} />
-        )
-    }
+        width: 110,
+        render: (_, record) =>
+            record.status === 'in_review' ? (
+                <Button
+                    size="small"
+                    type="primary"
+                    icon={<CheckCircle size={14} />}
+                    onClick={(e) => { e.stopPropagation(); handlePublish(record); }}
+                >
+                    Publish
+                </Button>
+            ) : null,
+    },
 ];

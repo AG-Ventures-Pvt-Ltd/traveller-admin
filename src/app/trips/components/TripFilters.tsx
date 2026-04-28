@@ -1,97 +1,68 @@
+'use client';
+
 import React from 'react';
-import { Row, Col, Input, Button, Select, DatePicker } from 'antd';
-import type { Dayjs } from 'dayjs';
-import { Search, RefreshCw } from 'lucide-react';
-import type { RangePickerProps } from 'antd/es/date-picker';
+import { Row, Col, Input, Button, Select } from 'antd';
+import { Search, RefreshCw, RotateCcw } from 'lucide-react';
+
+const STATUS_OPTIONS = [
+    { value: 'all', label: 'All Status' },
+    { value: 'in_review', label: 'In Review' },
+    { value: 'published', label: 'Published' },
+];
 
 interface TripFiltersProps {
     searchText: string;
     setSearchText: (text: string) => void;
-    isCompletedFilter: string;
-    setIsCompletedFilter: (filter: string) => void;
-    dateRange: [Dayjs | null, Dayjs | null] | null;
-    setDateRange: (range: [Dayjs | null, Dayjs | null] | null) => void;
-    priceRange: number[];
-    setPriceRange: (range: number[]) => void;
-    loadTrips: () => void;
+    statusFilter: string;
+    setStatusFilter: (status: string) => void;
+    onRefresh: () => void;
+    onReset: () => void;
     loading: boolean;
 }
 
 const TripFilters: React.FC<TripFiltersProps> = ({
     searchText,
     setSearchText,
-    isCompletedFilter,
-    setIsCompletedFilter,
-    dateRange,
-    setDateRange,
-    priceRange,
-    setPriceRange,
-    loadTrips,
-    loading
+    statusFilter,
+    setStatusFilter,
+    onRefresh,
+    onReset,
+    loading,
 }) => (
     <Row gutter={[16, 16]} align="middle">
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
             <Input
-                placeholder="Search by title, description, or address..."
+                placeholder="Search by title or location..."
                 prefix={<Search size={16} style={{ color: '#8c8c8c' }} />}
                 value={searchText}
                 onChange={e => setSearchText(e.target.value)}
                 allowClear
             />
         </Col>
-        <Col xs={24} sm={12} lg={4}>
-            <Input.Group compact>
-                <Select
-                    value={isCompletedFilter}
-                    onChange={setIsCompletedFilter}
-                    style={{ width: '100%' }}
-                >
-                    <Select.Option value="all">All Status</Select.Option>
-                    <Select.Option value="true">Completed</Select.Option>
-                    <Select.Option value="false">Not Completed</Select.Option>
-                </Select>
-            </Input.Group>
-        </Col>
-        <Col xs={24} sm={12} lg={5}>
-            <DatePicker.RangePicker
-                value={dateRange}
-                onChange={(dates) => {
-                    setDateRange(dates as [Dayjs | null, Dayjs | null] | null);
-                }}
+        <Col xs={24} sm={8} lg={4}>
+            <Select
+                value={statusFilter}
+                onChange={setStatusFilter}
                 style={{ width: '100%' }}
-                allowClear
+                options={STATUS_OPTIONS}
             />
         </Col>
-        <Col xs={24} sm={12} lg={5}>
-            <Input.Group compact>
-                <Input
-                    type="number"
-                    min={0}
-                    value={priceRange[0] !== undefined ? priceRange[0] : ''}
-                    onChange={e => setPriceRange([e.target.value ? Number(e.target.value) : 0, priceRange[1]])}
-                    placeholder="Min Price"
-                    style={{ width: 90 }}
-                />
-                <Input
-                    type="number"
-                    min={0}
-                    value={priceRange[1] !== undefined ? priceRange[1] : ''}
-                    onChange={e => setPriceRange([priceRange[0], e.target.value ? Number(e.target.value) : 0])}
-                    placeholder="Max Price"
-                    style={{ width: 90 }}
-                />
-            </Input.Group>
-        </Col>
         <Col xs={24} sm={12} lg={4}>
-            <Button
-                icon={<RefreshCw size={16} />}
-                onClick={loadTrips}
-                loading={loading}
-            >
-                Refresh
-            </Button>
+            <Row gutter={8}>
+                <Col>
+                    <Button icon={<RefreshCw size={16} />} onClick={onRefresh} loading={loading}>
+                        Refresh
+                    </Button>
+                </Col>
+                <Col>
+                    <Button icon={<RotateCcw size={16} />} onClick={onReset}>
+                        Reset
+                    </Button>
+                </Col>
+            </Row>
         </Col>
     </Row>
 );
 
 export default TripFilters;
+

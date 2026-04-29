@@ -19,6 +19,8 @@ export const api = {
 
     getDashboardStats: '/api/admin/v1/stats',
 
+    getServerHealth: '/api/admin/v1/health/stream',
+
     // Categories
     getTripCategories: '/api/admin/v1/config/trip-categories',
     addTripCategories: '/api/admin/v1/config/trip-categories/add',
@@ -53,4 +55,7 @@ export const api = {
     addReview: (tripId: string) => `/api/admin/v1/trips/${tripId}/reviews`,
     updateReview: (tripId: string, reviewId: string) => `/api/admin/v1/trips/${tripId}/reviews/${reviewId}`,
     deleteReview: (tripId: string, reviewId: string) => `/api/admin/v1/trips/${tripId}/reviews/${reviewId}`,
+
+    // Payments
+    getPayments: '/api/admin/v1/payments',
 } as const;

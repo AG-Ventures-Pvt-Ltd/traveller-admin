@@ -1,55 +1,74 @@
+import { Tag } from 'antd';
 import type { TableProps } from 'antd';
-import { PAYMENT_STATUS, PAYMENT_MODES, Payment } from '../constants';
-import { formatDateTime } from '../utils';
+import { PAYMENT_STATUS, PAYMENT_METHODS, Payment } from '../constants';
+
+const STATUS_COLOR: Record<string, string> = {
+    pending: 'orange',
+    completed: 'green',
+    failed: 'red',
+};
 
 export const paymentColumns: TableProps<Payment>['columns'] = [
-  {
-    title: 'Payment ID',
-    dataIndex: 'payment_id',
-    key: 'payment_id',
-  },
-  {
-    title: 'Trip ID',
-    dataIndex: 'trip_id',
-    key: 'trip_id',
-  },
-  {
-    title: 'Date & Time',
-    dataIndex: 'date_time',
-    key: 'date_time',
-    render: (date: Date) => formatDateTime(date),
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-    filters: PAYMENT_STATUS.map(s => ({ text: s.label, value: s.value })),
-    onFilter: (value, record) => record.status === value,
-    render: (status: string) => {
-      let color = 'green';
-      if (status === 'failed') color = 'red';
-      if (status === 'refunded') color = 'orange';
-      const label = PAYMENT_STATUS.find(s => s.value === status)?.label || status;
-      return <span style={{ color }}>{label}</span>;
+    {
+        title: 'Payment ID',
+        dataIndex: '_id',
+        key: '_id',
+        ellipsis: true,
+        width: 200,
     },
-  },
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: (name: string) => name,
-  },
-  {
-    title: 'Mode',
-    dataIndex: 'mode',
-    key: 'mode',
-    filters: PAYMENT_MODES.map(m => ({ text: m.label, value: m.value })),
-    onFilter: (value, record) => record.mode === value,
-  },
-  {
-    title: 'Amount',
-    dataIndex: 'amount',
-    key: 'amount',
-    render: (amount: number) => `₹${amount}`,
-  },
+    {
+        title: 'User',
+        key: 'user',
+        render: (_: unknown, record: Payment) =>
+            record.user ? (
+                <span>
+                    <div style={{ fontWeight: 500 }}>{record.user.username}</div>
+                    <div style={{ fontSize: 12, color: '#8c8c8c' }}>{record.user.email}</div>
+                </span>
+            ) : '—',
+    },
+    {
+        title: 'Trip',
+        dataIndex: 'tripTitle',
+        key: 'tripTitle',
+        ellipsis: true,
+        render: (v: string) => v || '—',
+    },
+    {
+        title: 'Amount',
+        key: 'amount',
+        render: (_: unknown, record: Payment) => `₹${record.amount.toLocaleString('en-IN')} ${record.currency || 'INR'}`,
+        align: 'right',
+    },
+    {
+        title: 'Method',
+        dataIndex: 'method',
+        key: 'method',
+        render: (v: string) => PAYMENT_METHODS.find(m => m.value === v)?.label || v,
+    },
+    {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        render: (v: string) => (
+            <Tag color={STATUS_COLOR[v] || 'default'}>
+                {PAYMENT_STATUS.find(s => s.value === v)?.label || v}
+            </Tag>
+        ),
+    },
+    {
+        title: 'Gateway Txn ID',
+        dataIndex: 'gatewayTransactionId',
+        key: 'gatewayTransactionId',
+        ellipsis: true,
+        render: (v: string) => v || '—',
+    },
+    {
+        title: 'Date',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (v: string) => v ? new Date(v).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—',
+        sorter: true,
+    },
 ];
+

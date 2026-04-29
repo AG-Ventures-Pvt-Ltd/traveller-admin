@@ -1,174 +1,127 @@
 'use client'
-import React, { useState } from 'react';
-import { Typography, Row, Col, Select, DatePicker, Button, Modal } from 'antd';
-import type { TableProps } from 'antd';
+import React, { useState, useCallback } from 'react';
+import { Typography, Row, Col, Select, DatePicker, Button, Input } from 'antd';
+import type { RangePickerProps } from 'antd/es/date-picker';
 import type { Dayjs } from 'dayjs';
 
 import PaymentTable from './components/PaymentTable';
-import { paymentColumns as basePaymentColumns } from './components/PaymentColumns';
-import { PAYMENT_STATUS, PAYMENT_MODES, Payment } from './constants';
+import { paymentColumns } from './components/PaymentColumns';
+import { PAYMENT_STATUS, PAYMENT_METHODS } from './constants';
+import { useGetData } from '@/services/useGetData';
+import { api } from '@/common/constants/api.urls';
 
 const { Title, Text } = Typography;
-
-const initialPayments: Payment[] = [
-    {
-        payment_id: 'P001',
-        trip_id: 'T101',
-        date_time: new Date('2025-08-29T10:30:00'),
-        status: PAYMENT_STATUS[0].value,
-        name: 'John Doe',
-        mode: PAYMENT_MODES[0].value,
-        amount: 2500,
-    },
-    {
-        payment_id: 'P002',
-        trip_id: 'T102',
-        date_time: new Date('2025-08-28T14:15:00'),
-        status: PAYMENT_STATUS[1].value,
-        name: 'Jane Smith',
-        mode: PAYMENT_MODES[1].value,
-        amount: 1800,
-    },
-    {
-        payment_id: 'P003',
-        trip_id: 'T103',
-        date_time: new Date('2025-08-27T09:00:00'),
-        status: PAYMENT_STATUS[2].value,
-        name: 'Amit Kumar',
-        mode: PAYMENT_MODES[2].value,
-        amount: 3200,
-    },
-];
+const { RangePicker } = DatePicker;
 
 const Payments = () => {
-    const [status, setStatus] = useState<string[]>([]);
-    const [mode, setMode] = useState<string[]>([]);
-    const [date, setDate] = useState<Dayjs | null>(null);
-    const [payments, setPayments] = useState<Payment[]>(initialPayments);
-    const [loading, setLoading] = useState(false);
-    const [refundModal, setRefundModal] = useState<{ open: boolean; payment: string | null }>({ open: false, payment: null });
+    const [status, setStatus] = useState<string | undefined>(undefined);
+    const [method, setMethod] = useState<string | undefined>(undefined);
+    const [search, setSearch] = useState('');
+    const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
 
-    // Filter logic
-    const filteredPayments = payments.filter((payment: Payment) => {
-        let match = true;
-        if (status && status.length > 0) match = match && status.includes(payment.status);
-        if (mode && mode.length > 0) match = match && mode.includes(payment.mode);
-        if (date) {
-            const paymentDate = new Date(payment.date_time);
-            match = match &&
-                paymentDate.getFullYear() === date.year() &&
-                paymentDate.getMonth() === date.month() &&
-                paymentDate.getDate() === date.date();
-        }
-        return match;
+    const queryParams: Record<string, unknown> = {
+        page,
+        limit: pageSize,
+        ...(status ? { status } : {}),
+        ...(method ? { method } : {}),
+        ...(search ? { search } : {}),
+        ...(dateRange?.[0] ? { dateFrom: dateRange[0].format('YYYY-MM-DD') } : {}),
+        ...(dateRange?.[1] ? { dateTo: dateRange[1].format('YYYY-MM-DD') } : {}),
+    };
+
+    const { data, isLoading } = useGetData({
+        key: ['payments', JSON.stringify(queryParams)],
+        url: api.getPayments,
+        params: queryParams,
     });
 
-    const resetFilters = () => {
-        setStatus([]);
-        setMode([]);
-        setDate(null);
+    const payments = data?.data?.payments || [];
+    const total = data?.data?.total || 0;
+
+    const resetFilters = useCallback(() => {
+        setStatus(undefined);
+        setMethod(undefined);
+        setSearch('');
+        setDateRange(null);
+        setPage(1);
+    }, []);
+
+    const handlePageChange = (p: number, ps: number) => {
+        setPage(p);
+        setPageSize(ps);
     };
 
-    const handleRefresh = () => {
-        setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setPayments([...initialPayments]); // Replace with real API call in production
-            setLoading(false);
-        }, 700);
+    const handleDateChange: RangePickerProps['onChange'] = (dates) => {
+        setDateRange(dates as [Dayjs | null, Dayjs | null] | null);
+        setPage(1);
     };
 
-    // Add refund action
-    const handleRefund = (payment_id: string) => {
-        setRefundModal({ open: true, payment: payment_id });
-    };
-
-    const confirmRefund = () => {
-        setLoading(true);
-        setRefundModal({ open: false, payment: null });
-        setTimeout(() => {
-            setPayments(prev => prev.map(p => p.payment_id === refundModal.payment ? { ...p, status: PAYMENT_STATUS[2].value } : p));
-            setLoading(false);
-        }, 700);
-    };
-
-    // Extend columns with action
-    // Center align all columns
-    const paymentColumns: TableProps<Payment>['columns'] = [
-        ...(basePaymentColumns || []).map(col => ({ ...col, align: 'center' as const })),
-        {
-            title: 'Action',
-            key: 'action',
-            align: 'center',
-            render: (_, record) =>
-                record.status === PAYMENT_STATUS[0].value ? (
-                    <Button size="small" danger onClick={() => handleRefund(record.payment_id)} loading={loading}>
-                        Refund
-                    </Button>
-                ) : null,
-        },
-    ];
+    const columns = (paymentColumns || []).map(col => ({ ...col, align: 'center' as const }));
 
     return (
         <div>
             <Title level={2} style={{ color: '#fff' }}>Payments</Title>
-            <Text style={{ color: '#8c8c8c' }}>Manage payment methods and transactions.</Text>
+            <Text style={{ color: '#8c8c8c' }}>View and filter all payment transactions.</Text>
+
             <div style={{ marginTop: 24, marginBottom: 16 }}>
-                <Row gutter={16} align="middle">
+                <Row gutter={[12, 12]} align="middle">
                     <Col>
                         <Select
-                            mode="multiple"
                             allowClear
                             placeholder="Status"
-                            style={{ minWidth: 120 }}
+                            style={{ minWidth: 130 }}
                             value={status}
-                            onChange={setStatus}
+                            onChange={v => { setStatus(v); setPage(1); }}
                             options={PAYMENT_STATUS.map(s => ({ label: s.label, value: s.value }))}
                         />
                     </Col>
                     <Col>
                         <Select
-                            mode="multiple"
                             allowClear
-                            placeholder="Mode"
-                            style={{ minWidth: 120 }}
-                            value={mode}
-                            onChange={setMode}
-                            options={PAYMENT_MODES.map(m => ({ label: m.label, value: m.value }))}
+                            placeholder="Method"
+                            style={{ minWidth: 150 }}
+                            value={method}
+                            onChange={v => { setMethod(v); setPage(1); }}
+                            options={PAYMENT_METHODS.map(m => ({ label: m.label, value: m.value }))}
                         />
                     </Col>
                     <Col>
-                        <DatePicker
+                        <RangePicker
                             allowClear
-                            placeholder="Date"
-                            value={date}
-                            onChange={setDate}
-                            style={{ minWidth: 120 }}
+                            value={dateRange}
+                            onChange={handleDateChange}
+                            style={{ minWidth: 220 }}
+                        />
+                    </Col>
+                    <Col>
+                        <Input.Search
+                            placeholder="Search user, email, gateway ID..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            onSearch={() => setPage(1)}
+                            style={{ minWidth: 240 }}
+                            allowClear
                         />
                     </Col>
                     <Col>
                         <Button onClick={resetFilters}>Reset</Button>
                     </Col>
-                    <Col>
-                        <Button onClick={handleRefresh} loading={loading} type="primary">Refresh</Button>
-                    </Col>
                 </Row>
             </div>
+
             <div style={{ marginTop: 8 }}>
-                <PaymentTable columns={paymentColumns} data={filteredPayments} loading={loading} />
+                <PaymentTable
+                    columns={columns}
+                    data={payments}
+                    loading={isLoading}
+                    total={total}
+                    page={page}
+                    pageSize={pageSize}
+                    onPageChange={handlePageChange}
+                />
             </div>
-            <Modal
-                open={refundModal.open}
-                onOk={confirmRefund}
-                onCancel={() => setRefundModal({ open: false, payment: null })}
-                okText="Confirm Refund"
-                cancelText="Cancel"
-                centered
-                title="Confirm Refund"
-                confirmLoading={loading}
-            >
-                Are you sure you want to refund this payment?
-            </Modal>
         </div>
     );
 };

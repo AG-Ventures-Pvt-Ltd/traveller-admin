@@ -7,21 +7,28 @@ interface PaymentTableProps {
     columns: TableProps<Payment>['columns'];
     data: Payment[];
     loading: boolean;
+    total: number;
+    page: number;
+    pageSize: number;
+    onPageChange: (page: number, pageSize: number) => void;
 }
 
-const PaymentTable: React.FC<PaymentTableProps> = ({ columns, data, loading }) => (
+const PaymentTable: React.FC<PaymentTableProps> = ({ columns, data, loading, total, page, pageSize, onPageChange }) => (
     <Table
         columns={columns}
         dataSource={data}
-        rowKey="payment_id"
+        rowKey="_id"
         loading={loading}
         scroll={{ x: 1200 }}
         pagination={{
-            total: data.length,
+            current: page,
+            pageSize,
+            total,
+            onChange: onPageChange,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} payments`,
-            pageSizeOptions: ['10', '20']
+            pageSizeOptions: ['10', '20', '50'],
+            showTotal: (t, range) => `${range[0]}-${range[1]} of ${t} payments`,
         }}
     />
 );

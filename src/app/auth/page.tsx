@@ -18,6 +18,7 @@ import { api } from '../../common/constants/api.urls';
 import { useAuthStore,  } from '../../store/auth.store';
 
 import { Role } from '@/common/constants/rolePermissions'; // Import correct Role type
+import { Permission } from '@/common/constants/permissions';
 
 const { Title, Text, Link } = Typography;
 
@@ -56,7 +57,7 @@ const Auth = () => {
                 name: data.data.username || 'User',
                 id: data.data.id || 'User',
                 token: data.data.token,
-                permissions: data.data.permissions
+                permissions: data.data.permissions as Permission[]
             });
             
             localStorage.setItem("user", `${data.data.token}`)

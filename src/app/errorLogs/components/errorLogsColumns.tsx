@@ -45,7 +45,7 @@ export const errorLogColumns: TableProps<ErrorLog>['columns'] = [
         title: 'Status Code',
         dataIndex: 'statusCode',
         key: 'statusCode',
-        sorter: (a, b) => a.statusCode - b.statusCode,
+        sorter: (a, b) => (a.statusCode || 0) - (b.statusCode || 0),
         render: (statusCode: number) => {
             let color = 'green';
             if (statusCode >= 400 && statusCode < 500) color = 'orange';

@@ -309,7 +309,7 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
                 open={modalOpen}
                 onCancel={() => setModalOpen(false)}
                 footer={null}
-                destroyOnClose
+                destroyOnHidden
             >
                 <Form form={form} layout="vertical" onFinish={handleSubmit}>
                     <Form.Item name="name" label="City Name" rules={[{ required: true, message: 'City name is required' }]}>
@@ -526,7 +526,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => (
                 <Row gutter={[8, 8]}>
                     {Object.entries(trip.views).map(([source, count]) => (
                         <Col key={source} xs={12} sm={8} md={4}>
-                            <Statistic title={source} value={count || 0} valueStyle={{ fontSize: 16 }} />
+                            <Statistic title={source} value={count || 0} styles={{ content: { fontSize: 16 } }} />
                         </Col>
                     ))}
                 </Row>
@@ -541,7 +541,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => (
                 <Row gutter={[8, 8]}>
                     {Object.entries(trip.shares).map(([platform, count]) => (
                         <Col key={platform} xs={12} sm={8} md={4}>
-                            <Statistic title={platform} value={count || 0} valueStyle={{ fontSize: 16 }} />
+                            <Statistic title={platform} value={count || 0} styles={{ content: { fontSize: 16 } }} />
                         </Col>
                     ))}
                 </Row>

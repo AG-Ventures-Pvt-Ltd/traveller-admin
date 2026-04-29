@@ -11,15 +11,20 @@ interface PaymentTableProps {
     page: number;
     pageSize: number;
     onPageChange: (page: number, pageSize: number) => void;
+    onRowClick: (payment: Payment) => void;
 }
 
-const PaymentTable: React.FC<PaymentTableProps> = ({ columns, data, loading, total, page, pageSize, onPageChange }) => (
+const PaymentTable: React.FC<PaymentTableProps> = ({ columns, data, loading, total, page, pageSize, onPageChange, onRowClick }) => (
     <Table
         columns={columns}
         dataSource={data}
         rowKey="_id"
         loading={loading}
         scroll={{ x: 1200 }}
+        onRow={(record) => ({
+            onClick: () => onRowClick(record),
+            style: { cursor: 'pointer' },
+        })}
         pagination={{
             current: page,
             pageSize,

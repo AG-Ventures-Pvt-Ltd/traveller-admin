@@ -14,13 +14,13 @@ export const useGetData = ({ key, url, params = {} }: queryProps) => {
 
   return useQuery({
     queryKey: [...key, params],
-    queryFn: () => {
-      const data = baseAPI.get(url, { params });
-
-      return data;
+    queryFn: async () => {
+      const response = await baseAPI.get(url, { params });
+      return response.data;
     },
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,   // 5 min — data is fresh, no background refetch
+    gcTime: 10 * 60 * 1000,     // 10 min — keep in cache after unmount (avoids re-fetch on navigation)
   });
 };

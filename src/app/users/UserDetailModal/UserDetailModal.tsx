@@ -34,7 +34,7 @@ export const UserDetailModal = ({ selectedUser, modalVisible, setModalVisible }:
       footer={null}
       styles={{
         mask: { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
-        content: { backgroundColor: '#1f1f1f' },
+        body: { backgroundColor: '#1f1f1f' },
       }}
     >
       {selectedUser && (

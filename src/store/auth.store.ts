@@ -9,7 +9,7 @@ export interface User {
     
     name: string;
     token: string;
- 
+    id: string;
     permissions?: Permission[]; // Explicit permissions from backend
     
 }
@@ -38,7 +38,7 @@ interface AuthState {
 }
 
 import Cookies from 'js-cookie';
-import { Contrail_One } from "next/font/google";
+
 
 // Custom storage adapter for cookies
 const cookieStorage: StateStorage = {

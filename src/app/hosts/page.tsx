@@ -108,8 +108,8 @@ export default function HostsPage() {
         setVerifyModalVisible(true);
     };
 
-    const isHostVerified = (host: Host) =>
-        host.isVerified ?? host.isProfileVerified ?? false;
+    const isHostVerified = (host: Host | null) =>
+        host ? (host.isVerified ?? host.isProfileVerified ?? false) : false;
 
     const columns: TableColumnsType<Host> = [
         {

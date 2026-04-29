@@ -10,6 +10,8 @@ import {
     message,
     Row,
     Col,
+    Select,
+    InputNumber,
 } from 'antd';
 import { usePostData } from '@/services/usePostData';
 import { useQueryClient } from '@tanstack/react-query';
@@ -22,10 +24,13 @@ interface CreateHostModalProps {
 }
 
 interface CreateHostFormValues {
+    fullName: string;
     username: string;
     email: string;
     password: string;
-    name: string;
+    contactNumber: string;
+    hostType: string;
+    yearsOfExperience: number;
 }
 
 export const CreateHostModal: React.FC<CreateHostModalProps> = ({
@@ -71,7 +76,7 @@ export const CreateHostModal: React.FC<CreateHostModalProps> = ({
             onCancel={handleCancel}
             footer={null}
             width={700}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form
                 form={form}
@@ -82,11 +87,11 @@ export const CreateHostModal: React.FC<CreateHostModalProps> = ({
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="name"
-                            label="Display Name"
-                            rules={[{ required: true, message: 'Please enter display name' }]}
+                            name="fullName"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter full name' }]}
                         >
-                            <Input placeholder="Enter display name" />
+                            <Input placeholder="Enter full name" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -123,6 +128,46 @@ export const CreateHostModal: React.FC<CreateHostModalProps> = ({
                             ]}
                         >
                             <Input.Password placeholder="Enter password" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="contactNumber"
+                            label="Contact Number"
+                            rules={[{ required: true, message: 'Please enter contact number' }]}
+                        >
+                            <Input placeholder="Enter contact number" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="hostType"
+                            label="Host Type"
+                            rules={[{ required: true, message: 'Please select host type' }]}
+                        >
+                            <Select placeholder="Select host type">
+                                <Select.Option value="Individual">Individual</Select.Option>
+                                <Select.Option value="Organization">Company</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col xs={24}>
+                        <Form.Item
+                            name="yearsOfExperience"
+                            label="Years of Experience"
+                            rules={[{ required: true, message: 'Please enter years of experience' }]}
+                        >
+                            <InputNumber
+                                min={0}
+                                placeholder="Enter years of experience"
+                                style={{ width: '100%' }}
+                            />
                         </Form.Item>
                     </Col>
                 </Row>

@@ -65,12 +65,12 @@ const ApiLogs = () => {
                 <Card style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                     <ApiLogsTable
                         columns={apiLogColumns}
-                        data={apiLogsData?.data.data.logs || []}
+                        data={apiLogsData?.data.logs || []}
                         loading={isLoading}
                         onRow={handleRowClick}
                         pagination={{
                             ...pagination,
-                            total: apiLogsData?.data.data.total || 0,
+                            total: apiLogsData?.data.total || 0,
                             showSizeChanger: true,
                             showQuickJumper: true,
                             showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} API logs`,

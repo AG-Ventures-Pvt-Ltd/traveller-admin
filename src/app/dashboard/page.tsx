@@ -66,6 +66,10 @@ interface StatsData {
   totalSuccessfulBookings?: number;
 }
 
+interface ApiStatsResponse {
+  data: StatsData;
+}
+
 interface StatCardProps {
   config: typeof STAT_CONFIG[number];
   value: number | undefined;
@@ -98,7 +102,7 @@ const StatCard = ({ config, value, loading }: StatCardProps) => {
                   </span>
                 }
                 value={value ?? 0}
-                valueStyle={{ color: config.color, fontSize: 32, fontWeight: 700 }}
+                styles={{ content: { color: config.color, fontSize: 32, fontWeight: 700 } }}
               />
             )}
           </div>
@@ -137,7 +141,7 @@ const DashboardStats = () => {
         <Col key={config.key} xs={24} sm={12} lg={8} xl={8} xxl={4} style={{ flex: '1 1 0' }}>
           <StatCard
             config={config}
-            value={(stats as StatsData)?.[config.key as StatKey]}
+            value={(stats as ApiStatsResponse)?.data?.[config.key as StatKey]}
             loading={isLoading}
           />
         </Col>

@@ -18,16 +18,13 @@ const PermissionGuard: React.FC<PermissionGuardProps> = ({ permission, children 
     const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
-        // Simple check: if we have a user, check permission.
-        // If no user, the middleware should have redirected, but we double check here.
-        if (user) {
-            const authorized = hasPermission(permission);
-            setIsAuthorized(authorized);
-        } else {
-            setIsAuthorized(false);
+        if (!user) {
+            router.replace('/auth');
+            return;
         }
+        setIsAuthorized(hasPermission(permission));
         setIsChecking(false);
-    }, [user, hasPermission, permission]);
+    }, [user, hasPermission, permission, router]);
 
     if (isChecking) {
         return (

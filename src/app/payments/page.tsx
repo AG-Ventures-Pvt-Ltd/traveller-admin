@@ -6,7 +6,8 @@ import type { Dayjs } from 'dayjs';
 
 import PaymentTable from './components/PaymentTable';
 import { paymentColumns } from './components/PaymentColumns';
-import { PAYMENT_STATUS, PAYMENT_METHODS } from './constants';
+import { PAYMENT_STATUS, PAYMENT_METHODS, Payment } from './constants';
+import PaymentDetailModal from './components/PaymentDetailModal';
 import { useGetData } from '@/services/useGetData';
 import { api } from '@/common/constants/api.urls';
 
@@ -20,6 +21,7 @@ const Payments = () => {
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
     const queryParams: Record<string, unknown> = {
         page,
@@ -63,7 +65,7 @@ const Payments = () => {
     return (
         <div>
             <Title level={2} style={{ color: '#fff' }}>Payments</Title>
-            <Text style={{ color: '#8c8c8c' }}>View and filter all payment transactions.</Text>
+            <Text style={{ color: '#8c8c8c' }}>Click any row to view full payment details.</Text>
 
             <div style={{ marginTop: 24, marginBottom: 16 }}>
                 <Row gutter={[12, 12]} align="middle">
@@ -120,8 +122,15 @@ const Payments = () => {
                     page={page}
                     pageSize={pageSize}
                     onPageChange={handlePageChange}
+                    onRowClick={setSelectedPayment}
                 />
             </div>
+
+            <PaymentDetailModal
+                open={!!selectedPayment}
+                onClose={() => setSelectedPayment(null)}
+                payment={selectedPayment}
+            />
         </div>
     );
 };

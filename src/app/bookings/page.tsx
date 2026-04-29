@@ -103,12 +103,12 @@ const Bookings = () => {
                 <Card style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                     <BookingsTable
                         columns={bookingColumns}
-                        data={bookingsData?.data.data.bookings || []}
+                        data={bookingsData?.data.bookings || []}
                         loading={false}
                         onRow={handleRowClick}
                         pagination={{
                             ...pagination,
-                            total: bookingsData?.data.data.pagination.totalBookings || 0,
+                            total: bookingsData?.data.pagination.totalBookings || 0,
                             showSizeChanger: true,
                             showQuickJumper: true,
                             showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} bookings`,

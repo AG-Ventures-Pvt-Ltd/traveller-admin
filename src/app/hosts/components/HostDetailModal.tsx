@@ -120,7 +120,7 @@ export const HostDetailModal: React.FC<HostDetailModalProps> = ({
             footer={null}
             styles={{
                 mask: { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
-                content: { backgroundColor: '#1f1f1f' },
+                body: { backgroundColor: '#1f1f1f' },
             }}
         >
             <div style={{ maxHeight: '75vh', overflowY: 'auto', paddingTop: '16px' }}>

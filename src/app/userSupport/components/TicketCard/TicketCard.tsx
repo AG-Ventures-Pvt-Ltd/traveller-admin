@@ -33,7 +33,7 @@ export const TicketCard = ({ ticket, handleTicketClick }: TicketCardProps) => {
         border: '1px solid rgba(255, 255, 255, 0.1)',
         cursor: 'pointer'
       }}
-      bodyStyle={{ padding: '20px' }}
+      styles={{ body: { padding: '20px' } }}
     >
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
@@ -51,8 +51,8 @@ export const TicketCard = ({ ticket, handleTicketClick }: TicketCardProps) => {
             text={STATUS_CONFIG[ticket?.status].text}
             style={{ color: '#fff' }}
           />
-          <Tag color={PRIORITY_LEVELS[ticket?.priority.toUpperCase()]?.color} >
-            {PRIORITY_LEVELS[ticket?.priority.toUpperCase()]?.text}
+          <Tag color={PRIORITY_LEVELS[ticket?.priority?.toUpperCase()]?.color} >
+            {PRIORITY_LEVELS[ticket?.priority?.toUpperCase()]?.text || ticket?.priority}
           </Tag>
         </Space>
       </div>

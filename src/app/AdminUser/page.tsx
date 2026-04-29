@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Table, Card, Input, Button, Space, Tag, Avatar, Dropdown, Modal, Row, Col, Typography, ConfigProvider, theme, message
+  Table, Card, Input, Button, Space, Tag, Avatar, Dropdown, Modal, Row, Col, Typography, message
 } from 'antd';
 import type { TableProps, TablePaginationConfig } from 'antd';
 import {
@@ -19,7 +19,11 @@ import { Admin } from './constant';
 
 const { Title, Text } = Typography;
 
-const ALL_PERMISSIONS = ['dashboard', 'users', 'trips', 'stories', 'analytics', 'reports', 'payments', 'usersupport', 'settings', 'adminusers']
+const ALL_PERMISSIONS = [
+  'dashboard', 'users', 'hosts', 'bookings', 'trips', 'stories',
+  'payments', 'usersupport', 'settings', 'adminusers',
+  'errorlogs', 'apilogs', 'serverhealth', 'configs',
+]
 
 const AdminUser = () => {
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -37,15 +41,15 @@ const AdminUser = () => {
     params: { page: pagination.current, limit: pagination.pageSize }
   })
 
-  console.log(data?.data.data.data, data)
+  console.log(data?.data.data, data)
  
 
   useEffect(() => {
-    if (data && Array.isArray(data?.data?.data?.data)) {
+    if (data && Array.isArray(data?.data?.data)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAdmins(data?.data?.data?.data);
-      setFilteredAdmins(data?.data?.data?.data);
-      setPagination(prev => ({ ...prev, total: data?.data.data.totalPages || 0 }));
+      setAdmins(data?.data?.data);
+      setFilteredAdmins(data?.data?.data);
+      setPagination(prev => ({ ...prev, total: data?.data.totalPages || 0 }));
     } 
   }, [data]);
 
@@ -180,16 +184,6 @@ const AdminUser = () => {
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm,
-        token: {
-          colorPrimary: '#1890ff',
-          borderRadius: 8,
-        }
-      }}
-    >
-
       <div className="-m-2 -mb-4 min-h-[80vh] h-[80vh] overflow-auto">
         <div style={{ marginBottom: '12px' }}>
           <Title level={4} style={{ color: '#fff', marginBottom: '0' }}>
@@ -286,7 +280,6 @@ const AdminUser = () => {
         <AddAdminModal addModal={addModal} setAddModal={setAddModal} ALL_PERMISSIONS={ALL_PERMISSIONS} />
         <DeleteAdminModal setAdmins={setAdmins} deleteModal={deleteModal} setDeleteModal={setDeleteModal} onSuccess={refetch} />
       </div>
-    </ConfigProvider>
   );
 };
 

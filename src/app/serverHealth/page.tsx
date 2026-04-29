@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Row, Col, Typography, Spin, Alert } from 'antd';
 import { Monitor, Cpu, HardDrive, MemoryStick, Clock } from 'lucide-react';
-// import { EventSource } from 'eventsource';
+import { api } from '@/common/constants/api.urls';
 
 const { Title, Text } = Typography;
 
@@ -36,42 +36,31 @@ const ServerHealth = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  //   useEffect(() => {
-  //     const user = localStorage.getItem('user');
-  //     let token = '';
-  //     if (user) {
-  //       const { token: t } = JSON.parse(user);
-  //       token = t;
-  //     }
-
-  //     const eventSource = new EventSource(`${import.meta.env.VITE_API_URL}/api/admin/v1/health/stream?token=${token}`);
-
-  //     eventSource.onmessage = (event) => {
-  //       try {
-  //         const data = JSON.parse(event.data);
-  //         setHealthData(data);
-  //         setLoading(false);
-  //         setError(null);
-  //       } catch (err) {
-  //         setError('Failed to parse health data');
-  //         setLoading(false);
-  //       }
-  //     };
-
-  //     eventSource.onerror = (err) => {
-  //       setError('Failed to connect to health stream');
-  //       setLoading(false);
-  //     };
-
-  //     return () => {
-  //       eventSource.close();
-  //     };
-  //   }, []);
-
-  // Mock loading for now since effect is commented out
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const token = localStorage.getItem('user') || '';
+
+    const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${api.getServerHealth}?token=${token}`);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setHealthData(data);
+        setLoading(false);
+        setError(null);
+      } catch (err) {
+        setError('Failed to parse health data');
+        setLoading(false);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      setError('Failed to connect to health stream');
+      setLoading(false);
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   if (loading) {
@@ -115,7 +104,7 @@ const ServerHealth = () => {
               title={<span style={{ color: '#8c8c8c' }}><Cpu size={16} style={{ marginRight: '5px' }} />CPU Usage</span>}
               value={healthData?.cpu?.usage || 0}
               suffix="%"
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
             <Text style={{ fontSize: '12px', color: '#8c8c8c' }}>
               {healthData?.cpu?.cores} cores
@@ -128,7 +117,7 @@ const ServerHealth = () => {
               title={<span style={{ color: '#8c8c8c' }}><MemoryStick size={16} style={{ marginRight: '5px' }} />RAM Used</span>}
               value={healthData?.memory?.used || 0}
               suffix="GB"
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
             <Text style={{ fontSize: '12px', color: '#8c8c8c' }}>
               Total: {healthData?.memory?.total || 0} GB | Usage: {healthData?.memory?.percentage}%
@@ -141,7 +130,7 @@ const ServerHealth = () => {
               title={<span style={{ color: '#8c8c8c' }}><HardDrive size={16} style={{ marginRight: '5px' }} />Disk Usage</span>}
               value={healthData?.disk?.usage || 0}
               suffix="%"
-              valueStyle={{ color: '#eb2f96' }}
+              styles={{ content: { color: '#eb2f96' } }}
             />
           </Card>
         </Col>
@@ -150,7 +139,7 @@ const ServerHealth = () => {
             <Statistic
               title={<span style={{ color: '#8c8c8c' }}><Clock size={16} style={{ marginRight: '5px' }} />Uptime</span>}
               value={healthData?.uptime?.formatted || 'N/A'}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -160,7 +149,7 @@ const ServerHealth = () => {
               title={<span style={{ color: '#8c8c8c' }}>Node Heap Used</span>}
               value={healthData?.processMemory?.heapUsed || 0}
               suffix="MB"
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' } }}
             />
             <Text style={{ fontSize: '12px', color: '#8c8c8c' }}>
               Total: {healthData?.processMemory?.heapTotal} MB
@@ -173,7 +162,7 @@ const ServerHealth = () => {
               title={<span style={{ color: '#8c8c8c' }}>Process RSS</span>}
               value={healthData?.processMemory?.rss || 0}
               suffix="MB"
-              valueStyle={{ color: '#8c8c8c' }}
+              styles={{ content: { color: '#8c8c8c' } }}
             />
           </Card>
         </Col>

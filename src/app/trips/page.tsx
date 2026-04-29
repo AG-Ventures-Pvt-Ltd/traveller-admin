@@ -38,7 +38,7 @@ const TripsPage = () => {
     });
 
     // API shape: { data: { data: { data: Trip[], totalItems: number } } }
-    const tripsPayload = (tripsResponse as { data?: { data?: { data?: Trip[]; totalItems?: number } } } | undefined)?.data?.data;
+    const tripsPayload = (tripsResponse as { data?: { data?: Trip[]; totalItems?: number } } | undefined)?.data;
     const trips: Trip[] = tripsPayload?.data || [];
     const totalItems: number = tripsPayload?.totalItems || 0;
 

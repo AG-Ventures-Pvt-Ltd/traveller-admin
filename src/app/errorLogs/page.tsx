@@ -61,12 +61,12 @@ const ErrorLogs = () => {
                 <Card style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                     <ErrorLogsTable
                         columns={errorLogColumns}
-                        data={errorLogsData?.data.data.logs as ErrorLog[] || []}
+                        data={errorLogsData?.logs as ErrorLog[] || []}
                         loading={false}
                         onRow={handleRowClick}
                         pagination={{
                             ...pagination,
-                            total: errorLogsData?.data.data.total || 0,
+                            total: errorLogsData?.total || 0,
                             showSizeChanger: true,
                             showQuickJumper: true,
                             showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} error logs`,

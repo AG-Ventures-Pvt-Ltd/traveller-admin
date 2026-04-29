@@ -9,16 +9,13 @@ import {
   Pagination,
   Typography,
   Empty,
-  ConfigProvider,
-  theme,
   message,
   Button
 } from 'antd';
 import {
   Filter,
   Calendar,
-  ChevronUp,
-  ChevronDown, RefreshCw
+  RefreshCw
 } from 'lucide-react';
 import { STATUS_CONFIG, SORT_OPTIONS, PRIORITY_LEVELS, Ticket, TicketStatus, SortOption } from './constant';
 import { TicketCard } from './components/TicketCard/TicketCard';
@@ -30,12 +27,20 @@ import dayjs, { Dayjs } from 'dayjs';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
-const { Option } = Select;
 
 // Define the response type for useGetData
-interface TicketsResponse {
+interface TicketsPaginatedData {
   data: Ticket[];
   totalItems: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface TicketsApiResponse {
+  statusCode: number;
+  data: TicketsPaginatedData;
+  message: string;
 }
 
 const UserSupport = () => {
@@ -56,7 +61,7 @@ const UserSupport = () => {
   const { data, isLoading, refetch } = useGetData({
     key: ['support_tickets_data', String(currentPage), String(pageSize)],
     url: `${api.getSupportTickets}?page=${currentPage}&limit=${pageSize}`
-  }) as { data: TicketsResponse | undefined, isLoading: boolean, refetch: () => void };
+  }) as { data: TicketsApiResponse | undefined, isLoading: boolean, refetch: () => void };
 
 
 
@@ -128,11 +133,8 @@ const UserSupport = () => {
 
 
   useEffect(() => {
-    if (data) {
-    
-      const ticketsData = data?.data?.data?.data || [];
-    
-      setTickets(ticketsData);
+    if (data?.data?.data) {
+      setTickets(data.data.data);
     }
   }, [data]);
 
@@ -147,19 +149,10 @@ const UserSupport = () => {
 
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm,
-        token: {
-          colorPrimary: '#1890ff',
-          borderRadius: 8,
-        },
-      }}
+    <div
+      className="min-h-screen p-6"
+      style={{ background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%)' }}
     >
-      <div
-        className="min-h-screen p-6"
-        style={{ background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%)' }}
-      >
         <div className="mb-6">
           <Title level={2} className="!text-white mb-2">
             Support Tickets
@@ -175,7 +168,7 @@ const UserSupport = () => {
             border: '1px solid rgba(255, 255, 255, 0.1)',
             marginBottom: '24px',
           }}
-          bodyStyle={{ padding: '20px' }}
+          styles={{ body: { padding: '20px' } }}
         >
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} sm={12} md={6}>
@@ -184,14 +177,15 @@ const UserSupport = () => {
                   <Filter size={16} className="inline mr-2" />
                   Status Filter
                 </Text>
-                <Select value={statusFilter} onChange={setStatusFilter} className="w-full">
-                  <Option value="all">All Statuses</Option>
-                  {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <Option key={key} value={key}>
-                      {config.text}
-                    </Option>
-                  ))}
-                </Select>
+                <Select
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  className="w-full"
+                  options={[
+                    { label: 'All Statuses', value: 'all' },
+                    ...Object.entries(STATUS_CONFIG).map(([key, config]) => ({ label: config.text, value: key }))
+                  ]}
+                />
               </div>
             </Col>
 
@@ -212,18 +206,17 @@ const UserSupport = () => {
             <Col xs={24} sm={12} md={6}>
               <div>
                 <Text strong className="!text-white block mb-2">Sort By</Text>
-                <Select value={sortBy} onChange={setSortBy} className="w-full">
-                  <Option value={SORT_OPTIONS.DATE_DESC}>
-                    <ChevronDown size={14} className="inline mr-2" />
-                    Newest First
-                  </Option>
-                  <Option value={SORT_OPTIONS.DATE_ASC}>
-                    <ChevronUp size={14} className="inline mr-2" />
-                    Oldest First
-                  </Option>
-                  <Option value={SORT_OPTIONS.PRIORITY_DESC}>Priority: High to Low</Option>
-                  <Option value={SORT_OPTIONS.PRIORITY_ASC}>Priority: Low to High</Option>
-                </Select>
+                <Select
+                  value={sortBy}
+                  onChange={setSortBy}
+                  className="w-full"
+                  options={[
+                    { label: 'Newest First', value: SORT_OPTIONS.DATE_DESC },
+                    { label: 'Oldest First', value: SORT_OPTIONS.DATE_ASC },
+                    { label: 'Priority: High to Low', value: SORT_OPTIONS.PRIORITY_DESC },
+                    { label: 'Priority: Low to High', value: SORT_OPTIONS.PRIORITY_ASC },
+                  ]}
+                />
               </div>
             </Col>
             <Col xs={24} sm={12} md={4}>
@@ -283,7 +276,7 @@ const UserSupport = () => {
               <Pagination
                 current={currentPage}
                 pageSize={pageSize}
-                total={data?.totalItems}
+                total={data?.data?.totalItems || 0}
                 onChange={setCurrentPage}
                 onShowSizeChange={(current, size) => {
                   setCurrentPage(1);
@@ -307,7 +300,6 @@ const UserSupport = () => {
           setReplyText={setReplyText}
         />
       </div>
-    </ConfigProvider>
   );
 }
 

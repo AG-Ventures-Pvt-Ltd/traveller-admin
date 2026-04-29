@@ -3,21 +3,21 @@ import React, { ReactNode } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { Role } from '@/common/constants/rolePermissions'
 import { useRouter } from 'next/navigation'
-import { Chiron_Sung_HK } from 'next/font/google'
 
 
 function RoleGaurd({allowedRoles, children}:{
     allowedRoles: Role[]
     children: ReactNode
 }) {
+    const { role, user } = useAuthStore()
+    const router = useRouter()
 
-    const role = useAuthStore((s)=>(s.role))
-    const route = useRouter()
-
-    if (!allowedRoles.includes(role!)){
-        route.replace('/unauthorsed')
-        return null 
+    if (!user) {
+        router.replace('/auth')
+        return null
     }
+
+    if (!allowedRoles.includes(role as Role)) return null
     
     return <>{children}</>
     

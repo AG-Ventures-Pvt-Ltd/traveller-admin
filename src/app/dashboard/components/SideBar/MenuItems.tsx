@@ -80,7 +80,7 @@ export const MenuItems = [
     permission: PERMISSIONS.API_LOGS
   },
   {
-    key: 'serverhealth',
+    key: 'serverHealth',
     icon: <Server size={18} />,
     label: 'Server Health',
     permission: PERMISSIONS.SERVER_HEALTH

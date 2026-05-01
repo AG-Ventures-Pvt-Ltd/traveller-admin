@@ -30,8 +30,8 @@ const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
 
     const { hasPermission, logout } = useAuthStore();
 
-    // Disabled permission filtering: show all menu items
-    const filteredMenuItems = MenuItems;
+    // Filter menu items based on user's permissions
+    const filteredMenuItems = MenuItems.filter(item => hasPermission(item.permission));
 
     return (
         <Sider

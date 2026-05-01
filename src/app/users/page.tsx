@@ -27,8 +27,10 @@ export default function UsersPage() {
     params: { page, limit: 10 },
   });
 
-  const users: User[] = usersData?.users || [];
+  const users: User[] = usersData?.data.data || [];
   const total: number = usersData?.total || 0;
+
+  console.log(users)
 
   const filteredUsers = useMemo(() => {
     if (!searchText) return users;

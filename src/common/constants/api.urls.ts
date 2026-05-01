@@ -4,6 +4,7 @@ export const api = {
     addAdminUser: '/api/admin/v1/users/add',
     getAdminUser: '/api/admin/v1/users/all',
     deleteAdminUser: '/api/admin/v1/users/delete',
+    updateAdminUserPermissions: (id: string) => `/api/admin/v1/users/${id}/permissions`,
 
     getErrorLogs: '/api/admin/v1/errors/logs',
 
@@ -58,4 +59,11 @@ export const api = {
 
     // Payments
     getPayments: '/api/admin/v1/payments',
+
+    // Coupons
+    getCoupons: '/api/admin/v1/coupons',
+    createCoupon: '/api/admin/v1/coupons',
+    updateCoupon: (id: string) => `/api/admin/v1/coupons/${id}`,
+    toggleCoupon: (id: string) => `/api/admin/v1/coupons/${id}/toggle`,
+    getCouponUsages: (id: string) => `/api/admin/v1/coupons/${id}/usages`,
 } as const;

@@ -22,7 +22,7 @@ const { Title, Text } = Typography;
 const ALL_PERMISSIONS = [
   'dashboard', 'users', 'hosts', 'bookings', 'trips', 'stories',
   'payments', 'usersupport', 'settings', 'adminusers',
-  'errorlogs', 'apilogs', 'serverhealth', 'configs',
+  'errorlogs', 'apilogs', 'serverhealth', 'configs', 'coupons',
 ]
 
 const AdminUser = () => {
@@ -276,7 +276,7 @@ const AdminUser = () => {
             }}
           />
         </Card>
-        <EditAdminModal editModal={editModal} setEditModal={setEditModal} ALL_PERMISSIONS={ALL_PERMISSIONS} />
+        <EditAdminModal editModal={editModal} setEditModal={setEditModal} ALL_PERMISSIONS={ALL_PERMISSIONS} onSuccess={refetch} />
         <AddAdminModal addModal={addModal} setAddModal={setAddModal} ALL_PERMISSIONS={ALL_PERMISSIONS} />
         <DeleteAdminModal setAdmins={setAdmins} deleteModal={deleteModal} setDeleteModal={setDeleteModal} onSuccess={refetch} />
       </div>

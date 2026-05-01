@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Descriptions, Tag, Avatar, Typography, Space, Divider } from 'antd';
+import { Modal, Descriptions, Tag, Avatar, Typography, Space, Divider, Button } from 'antd';
 import { Payment, PAYMENT_STATUS, PAYMENT_METHODS } from '../constants';
+import { formatDateTime } from '@/common/utils/date';
 
 const { Text } = Typography;
 
@@ -8,26 +9,38 @@ const STATUS_COLOR: Record<string, string> = {
     pending: 'orange',
     completed: 'green',
     failed: 'red',
+    refunded: 'blue',
 };
 
 interface PaymentDetailModalProps {
     open: boolean;
     onClose: () => void;
     payment: Payment | null;
+    onRefund?: (payment: Payment) => void;
 }
 
-const PaymentDetailModal: React.FC<PaymentDetailModalProps> = ({ open, onClose, payment }) => {
+const PaymentDetailModal: React.FC<PaymentDetailModalProps> = ({ open, onClose, payment, onRefund }) => {
     if (!payment) return null;
 
     const statusLabel = PAYMENT_STATUS.find(s => s.value === payment.status)?.label || payment.status;
-    const methodLabel = PAYMENT_METHODS.find(m => m.value === payment.method)?.label || payment.method;
+    const methodLabel = PAYMENT_METHODS.find(m => m.value === payment.method)?.label || (payment.method || 'N/A');
+    const canRefund = payment.status === 'completed';
 
     return (
         <Modal
             title="Payment Details"
             open={open}
             onCancel={onClose}
-            footer={null}
+            footer={[
+                <Button key="close" onClick={onClose}>
+                    Close
+                </Button>,
+                canRefund && onRefund ? (
+                    <Button key="refund" type="primary" danger onClick={() => onRefund(payment)}>
+                        Process Refund
+                    </Button>
+                ) : null,
+            ]}
             width={680}
             destroyOnHidden
             styles={{
@@ -83,7 +96,7 @@ const PaymentDetailModal: React.FC<PaymentDetailModalProps> = ({ open, onClose, 
                     <Tag color={STATUS_COLOR[payment.status] || 'default'}>{statusLabel}</Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Method">
-                    {methodLabel}
+                    <Tag color="cyan">{methodLabel}</Tag>
                 </Descriptions.Item>
 
                 {payment.tripTitle && (
@@ -94,7 +107,7 @@ const PaymentDetailModal: React.FC<PaymentDetailModalProps> = ({ open, onClose, 
 
                 {payment.batchStartDate && (
                     <Descriptions.Item label="Batch Date" span={2}>
-                        {new Date(payment.batchStartDate).toLocaleDateString('en-IN', { dateStyle: 'long' })}
+                        {formatDateTime(payment.batchStartDate)}
                     </Descriptions.Item>
                 )}
 
@@ -121,10 +134,10 @@ const PaymentDetailModal: React.FC<PaymentDetailModalProps> = ({ open, onClose, 
                 )}
 
                 <Descriptions.Item label="Created At">
-                    {new Date(payment.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'medium' })}
+                    {formatDateTime(payment.createdAt)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Updated At">
-                    {new Date(payment.updatedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'medium' })}
+                    {formatDateTime(payment.updatedAt)}
                 </Descriptions.Item>
             </Descriptions>
         </Modal>

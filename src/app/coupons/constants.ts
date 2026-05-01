@@ -11,6 +11,7 @@ export interface Coupon {
     createdByType: 'admin' | 'host';
     tripApplicable: string | null;
     trip?: { _id: string; title: string };
+    hostName?: string;
     startDate: string;
     endDate: string;
     minOrderAmount: number;

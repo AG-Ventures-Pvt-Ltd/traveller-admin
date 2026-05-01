@@ -23,6 +23,7 @@ export const PAYMENT_STATUS = [
     { label: 'Pending', value: 'pending' },
     { label: 'Completed', value: 'completed' },
     { label: 'Failed', value: 'failed' },
+    { label: 'Refunded', value: 'refunded' },
 ];
 
 export const PAYMENT_METHODS = [

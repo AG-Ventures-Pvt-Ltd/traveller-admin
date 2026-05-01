@@ -82,8 +82,8 @@ export default function UsersPage() {
     },
     {
       title: 'Email Verified',
-      dataIndex: 'isEmailVerified',
-      key: 'isEmailVerified',
+      dataIndex: 'isVerified',
+      key: 'isVerified',
       width: 140,
       render: (verified: boolean) =>
         verified ? (

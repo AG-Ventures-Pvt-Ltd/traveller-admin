@@ -65,7 +65,7 @@ export interface User {
   email: string;
   avatar: string | null;
   phone: string;
-  isEmailVerified: boolean;
+  isVerified: boolean;
   createdAt: string;
 }
 

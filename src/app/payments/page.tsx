@@ -8,6 +8,7 @@ import PaymentTable from './components/PaymentTable';
 import { paymentColumns } from './components/PaymentColumns';
 import { PAYMENT_STATUS, PAYMENT_METHODS, Payment } from './constants';
 import PaymentDetailModal from './components/PaymentDetailModal';
+import { RefundModal } from './components/RefundModal';
 import { useGetData } from '@/services/useGetData';
 import { api } from '@/common/constants/api.urls';
 
@@ -22,6 +23,7 @@ const Payments = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+    const [refundPayment, setRefundPayment] = useState<Payment | null>(null);
 
     const queryParams: Record<string, unknown> = {
         page,
@@ -33,7 +35,7 @@ const Payments = () => {
         ...(dateRange?.[1] ? { dateTo: dateRange[1].format('YYYY-MM-DD') } : {}),
     };
 
-    const { data, isLoading } = useGetData({
+    const { data, isLoading, refetch } = useGetData({
         key: ['payments', JSON.stringify(queryParams)],
         url: api.getPayments,
         params: queryParams,
@@ -130,6 +132,20 @@ const Payments = () => {
                 open={!!selectedPayment}
                 onClose={() => setSelectedPayment(null)}
                 payment={selectedPayment}
+                onRefund={() => {
+                    setRefundPayment(selectedPayment);
+                    setSelectedPayment(null);
+                }}
+            />
+
+            <RefundModal
+                open={!!refundPayment}
+                payment={refundPayment}
+                onClose={() => setRefundPayment(null)}
+                onSuccess={() => {
+                    refetch();
+                    setRefundPayment(null);
+                }}
             />
         </div>
     );

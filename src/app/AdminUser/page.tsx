@@ -184,7 +184,7 @@ const AdminUser = () => {
   };
 
   return (
-      <div className="-m-2 -mb-4 min-h-[80vh] h-[80vh] overflow-auto">
+      <div className=" min-h-[80vh] h-[80vh] overflow-auto">
         <div style={{ marginBottom: '12px' }}>
           <Title level={4} style={{ color: '#fff', marginBottom: '0' }}>
             Admin Users

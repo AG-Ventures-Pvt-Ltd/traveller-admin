@@ -59,6 +59,7 @@ export const api = {
 
     // Payments
     getPayments: '/api/admin/v1/payments',
+    markPaymentRefund: (id: string) => `/api/admin/v1/payments/${id}/refund`,
 
     // Coupons
     getCoupons: '/api/admin/v1/coupons',

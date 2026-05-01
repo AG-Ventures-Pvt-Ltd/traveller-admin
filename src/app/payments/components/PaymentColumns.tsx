@@ -1,11 +1,13 @@
 import { Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { PAYMENT_STATUS, PAYMENT_METHODS, Payment } from '../constants';
+import { formatDateTime } from '@/common/utils/date';
 
 const STATUS_COLOR: Record<string, string> = {
     pending: 'orange',
     completed: 'green',
     failed: 'red',
+    refunded: 'blue',
 };
 
 export const paymentColumns: TableProps<Payment>['columns'] = [
@@ -67,7 +69,7 @@ export const paymentColumns: TableProps<Payment>['columns'] = [
         title: 'Date',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        render: (v: string) => v ? new Date(v).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—',
+        render: (v: string) => formatDateTime(v),
         sorter: true,
     },
 ];

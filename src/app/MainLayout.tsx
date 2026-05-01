@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
-import { Layout, Button, theme, ConfigProvider, Avatar, Dropdown, Space } from 'antd';
-import { AlignJustify, ChevronDown, Users } from 'lucide-react';
+import { Layout, Button, theme, ConfigProvider, Space } from 'antd';
+import { AlignJustify } from 'lucide-react';
 import SideBar from './dashboard/components/SideBar/SideBar';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
@@ -13,7 +13,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     const [collapsed, setCollapsed] = useState(false);
     const router = useRouter();
     const pathname = usePathname(); // Add usePathname
-    const { user, logout } = useAuthStore(); // Check user from store
+    const { user } = useAuthStore(); // Check user from store
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -34,32 +34,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             router.push('/dashboard');
         }
     }, [user, pathname, router, isMounted]);
-
-    const userMenuItems = [
-
-        {
-            key: 'logout',
-            label: (
-                <Space>
-                    <div className="text-red-500 flex gap-2">
-                        Logout
-                    </div>
-                </Space>
-            ),
-            onClick: () => {
-                logout();
-                router.push('/auth');
-            }
-        }
-    ];
-
-    const handleUserMenuClick = ({ key }: { key: string }) => {
-       
-        if (key === 'logout') {
-            logout();
-            router.push('/auth');
-        }
-    };
 
     // Prevent hydration mismatch and flash of content
     if (!isMounted) return null;
@@ -102,8 +76,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                             
                         </Space>
                     </Header>
-                    <Content className="flex-1 overflow-y-auto bg-white/5 backdrop-blur-md rounded-lg border border-white/10 m-6 p-6">
-                        {children}
+                    <Content className="flex-1 overflow-y-auto bg-white/5 backdrop-blur-md rounded-lg border border-white/10 m-3 p-3">
+                        <div className="h-full overflow-y-auto">
+                            {children}
+                        </div>
                     </Content>
                 </Layout>
             </Layout>

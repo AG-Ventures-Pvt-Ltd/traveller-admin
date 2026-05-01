@@ -3,7 +3,7 @@ import { Tag, Space, Tooltip, Button } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Edit2, ToggleLeft, ToggleRight, Eye } from 'lucide-react';
 import { Coupon } from '../constants';
-import dayjs from 'dayjs';
+import { formatDate } from '@/common/utils/date';
 
 export const getCouponColumns = (
     onEdit: (coupon: Coupon) => void,
@@ -64,8 +64,8 @@ export const getCouponColumns = (
         key: 'validity',
         render: (_, record) => (
             <Space direction="vertical" size={0} style={{ fontSize: 12 }}>
-                <span>{dayjs(record.startDate).format('DD MMM YYYY')}</span>
-                <span style={{ color: '#8c8c8c' }}>→ {dayjs(record.endDate).format('DD MMM YYYY')}</span>
+                <span>{formatDate(record.startDate)}</span>
+                <span style={{ color: '#8c8c8c' }}>→ {formatDate(record.endDate)}</span>
             </Space>
         ),
         width: 150,
@@ -84,6 +84,19 @@ export const getCouponColumns = (
         width: 140,
     },
     {
+        title: 'Created By',
+        dataIndex: 'createdByType',
+        key: 'createdByType',
+        render: (t: string, record) => (
+            <Tooltip title={t === 'admin' ? 'Admin Created' : `Host: ${record.hostName || 'Unknown'}`}>
+                <Tag color={t === 'admin' ? 'blue' : 'orange'}>
+                    {t === 'admin' ? 'Admin' : record.hostName?.slice(0, 15) || 'Host'}
+                </Tag>
+            </Tooltip>
+        ),
+        width: 140,
+    },
+    {
         title: 'Status',
         dataIndex: 'isActive',
         key: 'isActive',
@@ -91,13 +104,6 @@ export const getCouponColumns = (
             <Tag color={isActive ? 'success' : 'error'}>{isActive ? 'Active' : 'Inactive'}</Tag>
         ),
         width: 90,
-    },
-    {
-        title: 'Created By',
-        dataIndex: 'createdByType',
-        key: 'createdByType',
-        render: (t: string) => <Tag color={t === 'admin' ? 'blue' : 'orange'}>{t}</Tag>,
-        width: 100,
     },
     {
         title: 'Actions',

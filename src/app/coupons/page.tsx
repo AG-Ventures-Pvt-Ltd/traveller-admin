@@ -73,7 +73,7 @@ const CouponsPage = () => {
     };
 
     return (
-        <div className="-m-2 -mb-4 min-h-[80vh]">
+        <div className=" min-h-[80vh]">
             <div style={{ marginBottom: 12 }}>
                 <Title level={4} style={{ color: '#fff', marginBottom: 0 }}>Discount Coupons</Title>
                 <Text type="secondary">Manage discount coupons — create, edit, enable/disable, and view usage history.</Text>

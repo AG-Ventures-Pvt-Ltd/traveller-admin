@@ -5,7 +5,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { useGetData } from '../../../services/useGetData';
 import { api } from '../../../common/constants/api.urls';
 import { Coupon, CouponUsage } from '../constants';
-import dayjs from 'dayjs';
+import { formatDateTime } from '@/common/utils/date';
 
 const { Text } = Typography;
 
@@ -36,22 +36,22 @@ const columns: ColumnsType<CouponUsage> = [
         title: 'Order Amount',
         dataIndex: 'orderAmount',
         key: 'orderAmount',
-        render: (v: number) => `₹${v.toLocaleString()}`,
+        render: (v: number) => `₹${v.toLocaleString('en-IN')}`,
         width: 130,
     },
     {
         title: 'Discount Applied',
         dataIndex: 'discountApplied',
         key: 'discountApplied',
-        render: (v: number) => <Tag color="green">-₹{v.toLocaleString()}</Tag>,
+        render: (v: number) => <Tag color="green">-₹{v.toLocaleString('en-IN')}</Tag>,
         width: 140,
     },
     {
         title: 'Used At',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        render: (v: string) => dayjs(v).format('DD MMM YYYY, HH:mm'),
-        width: 170,
+        render: (v: string) => formatDateTime(v),
+        width: 180,
     },
 ];
 

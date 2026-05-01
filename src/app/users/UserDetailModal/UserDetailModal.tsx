@@ -67,7 +67,7 @@ export const UserDetailModal = ({ selectedUser, modalVisible, setModalVisible }:
               <Card size="small" style={{ background: 'rgba(255,255,255,0.05)' }}>
                 <Space direction="vertical" style={{ width: '100%' }}>
                   <Text strong style={{ color: '#fff' }}>Account</Text>
-                  {selectedUser.isEmailVerified ? (
+                  {selectedUser.isVerified ? (
                     <Tag icon={<CheckCircle size={12} />} color="success">Email Verified</Tag>
                   ) : (
                     <Tag icon={<XCircle size={12} />} color="warning">Email Not Verified</Tag>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Row, Col, Typography, Spin, Alert } from 'antd';
 import { Monitor, Cpu, HardDrive, MemoryStick, Clock } from 'lucide-react';
 import { api } from '@/common/constants/api.urls';
+import { formatDateTime } from '@/common/utils/date';
 
 const { Title, Text } = Typography;
 
@@ -94,7 +95,7 @@ const ServerHealth = () => {
         Real-time server health metrics for {healthData?.hostname} streamed via Server-Sent Events.
       </Text>
       <Text style={{ color: '#8c8c8c', marginBottom: '20px', display: 'block' }}>
-        Last updated: {healthData?.timestamp ? new Date(healthData.timestamp).toLocaleString() : 'N/A'}
+        Last updated: {healthData?.timestamp ? formatDateTime(healthData.timestamp) : 'N/A'}
       </Text>
 
       <Row gutter={[16, 16]}>

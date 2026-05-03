@@ -8,7 +8,7 @@ import BookingsTable from './components/BookingTable';
 import BookingDetailModal from './components/BookingDetailedModal';
 import { bookingColumns } from './bookingColumns';
 import { Booking } from './constant';
-import { PERMISSIONS } from '@/common/constants/permissions';
+
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -24,7 +24,7 @@ const Bookings = () => {
     const [modalVisible, setModalVisible] = useState(false);
 
 
-    const { data: bookingsData, isLoading,error } = useGetData({ 
+    const { data: bookingsData } = useGetData({ 
         key: ['bookings'],
         url : api.getBookings,
         params: {
@@ -35,16 +35,6 @@ const Bookings = () => {
             order: 'desc',
         }
      });
-
-    
-
-
-    // const boookings_data = callBokkings(statusFilter, pagination)
-    // console.log(boookings_data)
-
-     
-     
-    
 
     const handleRowClick = (record: Booking ) => {
         return {

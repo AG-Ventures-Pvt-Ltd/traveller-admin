@@ -27,16 +27,14 @@ export default function UsersPage() {
     params: { page, limit: 10 },
   });
 
-  const users: User[] = usersData?.data.data || [];
+  const users = useMemo(() => usersData?.data.data || [], [usersData]);
   const total: number = usersData?.total || 0;
-
-  console.log(users)
 
   const filteredUsers = useMemo(() => {
     if (!searchText) return users;
     const lower = searchText.toLowerCase();
     return users.filter(
-      (u) =>
+      (u: User) =>
         u.username?.toLowerCase().includes(lower) ||
         u.email?.toLowerCase().includes(lower)
     );

@@ -110,7 +110,7 @@ export const CouponFormModal: React.FC<CouponFormModalProps> = ({ open, onClose,
             confirmLoading={isCreating || isUpdating}
             width={600}
         >
-            <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+            <Form form={form} layout="vertical" style={{ marginTop: 16 }} onFinish={handleFinish}>
                 {!isEdit && (
                     <Form.Item
                         name="code"

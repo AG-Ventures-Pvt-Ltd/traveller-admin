@@ -48,13 +48,13 @@ const ServerHealth = () => {
         setHealthData(data);
         setLoading(false);
         setError(null);
-      } catch (err) {
+      } catch (e) {
         setError('Failed to parse health data');
         setLoading(false);
       }
     };
 
-    eventSource.onerror = (err) => {
+    eventSource.onerror = () => {
       setError('Failed to connect to health stream');
       setLoading(false);
     };

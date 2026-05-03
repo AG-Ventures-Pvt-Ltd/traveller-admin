@@ -39,10 +39,7 @@ const AdminUser = () => {
     key: ['admins'],
     url: api.getAdminUser, 
     params: { page: pagination.current, limit: pagination.pageSize }
-  })
-
-  console.log(data?.data.data, data)
- 
+  }) 
 
   useEffect(() => {
     if (data && Array.isArray(data?.data?.data)) {

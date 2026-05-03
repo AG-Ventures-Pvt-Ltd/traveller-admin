@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { Permission } from '@/common/constants/permissions';
-import { Spin, Result, Button } from 'antd';
+import { Result, Button } from 'antd';
 
 interface PermissionGuardProps {
     permission: Permission;
@@ -14,25 +14,18 @@ interface PermissionGuardProps {
 const PermissionGuard: React.FC<PermissionGuardProps> = ({ permission, children }) => {
     const { hasPermission, user } = useAuthStore();
     const router = useRouter();
-    const [isChecking, setIsChecking] = useState(true);
-    const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
         if (!user) {
             router.replace('/auth');
-            return;
         }
-        setIsAuthorized(hasPermission(permission));
-        setIsChecking(false);
-    }, [user, hasPermission, permission, router]);
+    }, [user, router]);
 
-    if (isChecking) {
-        return (
-            <div className="h-screen w-full flex items-center justify-center bg-[#0c0c0c]">
-                <Spin size="large" />
-            </div>
-        );
+    if (!user) {
+        return null; // or a loading spinner if needed
     }
+
+    const isAuthorized = hasPermission(permission);
 
     if (!isAuthorized) {
         return (

@@ -39,6 +39,7 @@ interface Host {
     fullName?: string;
     contactNumber?: string;
     type?: string;
+    certificates?: string[];
     profile?: {
         mobileNumber?: string;
         countryCode?: string;
@@ -295,6 +296,10 @@ export default function HostsPage() {
                     selectedHost={selectedHost}
                     modalVisible={modalVisible}
                     setModalVisible={setModalVisible}
+                    onHostUpdate={(updatedHost) => {
+                        setSelectedHost(updatedHost);
+                        refetch();
+                    }}
                 />
 
                 <CreateHostModal

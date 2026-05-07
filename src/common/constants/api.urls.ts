@@ -13,9 +13,11 @@ export const api = {
     getApiLogs: '/api/admin/v1/api-logs/logs',
     getBookings: '/api/client/v1/bookings/all',
 
-    getHosts: '/api/admin/v1/users/hosts',
-    createHost: '/api/admin/v1/users/hosts/create',
-    verifyHost: '/api/admin/v1/users/hosts/verify',
+    getHosts: '/api/admin/v1/hosts',
+    createHost: '/api/admin/v1/hosts/create',
+    verifyHost: '/api/admin/v1/hosts/verify',
+    addHostCertificate: '/api/admin/v1/hosts/certificate/add',
+    removeHostCertificate: '/api/admin/v1/hosts/certificate/remove',
     getClientUsers: '/api/admin/v1/users/clients',
 
     getDashboardStats: '/api/admin/v1/stats',
@@ -56,6 +58,10 @@ export const api = {
     addReview: (tripId: string) => `/api/admin/v1/trips/${tripId}/reviews`,
     updateReview: (tripId: string, reviewId: string) => `/api/admin/v1/trips/${tripId}/reviews/${reviewId}`,
     deleteReview: (tripId: string, reviewId: string) => `/api/admin/v1/trips/${tripId}/reviews/${reviewId}`,
+    
+    // Host Profile Reviews (GET and POST only)
+    getProfileReviews: (hostId: string) => `/api/admin/v1/hosts/${hostId}/reviews`,
+    addProfileReview: (hostId: string) => `/api/admin/v1/hosts/${hostId}/reviews`,
 
     // Payments
     getPayments: '/api/admin/v1/payments',

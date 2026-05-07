@@ -14,6 +14,8 @@ import {
     Divider,
     List,
     Empty,
+    Button,
+    message,
 } from 'antd';
 import {
     Mail,
@@ -25,7 +27,11 @@ import {
     Share2,
     CheckCircle,
     Building,
+    Shield,
 } from 'lucide-react';
+import { ProfileReviewsTab } from './ProfileReviewsTab';
+import baseAPI from '@/services/baseApi';
+import { api } from '@/common/constants/api.urls';
 
 const { Text } = Typography;
 
@@ -67,23 +73,29 @@ interface Host {
     companyDocuments?: Array<{ name?: string; url?: string } | string>;
     socialMedias?: SocialMedia[];
     paymentDetails?: PaymentDetails;
+    certificates?: string[];
     profile?: {
         mobileNumber?: string;
         countryCode?: string;
     };
+    [key: string]: unknown;
 }
 
 interface HostDetailModalProps {
     selectedHost: Host | null;
     modalVisible: boolean;
     setModalVisible: (visible: boolean) => void;
+    onHostUpdate?: (updatedHost: Host) => void;
 }
 
 export const HostDetailModal: React.FC<HostDetailModalProps> = ({
     selectedHost,
     modalVisible,
     setModalVisible,
+    onHostUpdate,
 }) => {
+    const [loading, setLoading] = React.useState(false);
+
     if (!selectedHost) return null;
 
     const displayName = selectedHost.fullName || selectedHost.username || 'N/A';
@@ -92,6 +104,42 @@ export const HostDetailModal: React.FC<HostDetailModalProps> = ({
             ? `${selectedHost.profile.countryCode} ${selectedHost.profile.mobileNumber}`
             : selectedHost.profile?.mobileNumber) ||
         'N/A';
+
+    const handleAddCertificate = async () => {
+        try {
+            setLoading(true);
+            const response = await baseAPI.post(api.addHostCertificate, { hostId: selectedHost._id });
+            message.success('Certificate added successfully');
+            onHostUpdate?.(response.data.data);
+        } catch (error) {
+            message.error('Failed to add certificate');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveCertificate = async () => {
+        Modal.confirm({
+            title: 'Remove Certificate',
+            content: 'Are you sure you want to remove the certificate?',
+            okText: 'Yes',
+            cancelText: 'No',
+            onOk: async () => {
+                try {
+                    setLoading(true);
+                    const response = await baseAPI.post(api.removeHostCertificate, { hostId: selectedHost._id });
+                    message.success('Certificate removed successfully');
+                    onHostUpdate?.(response.data.data);
+                } catch (error) {
+                    message.error('Failed to remove certificate');
+                    console.error(error);
+                } finally {
+                    setLoading(false);
+                }
+            },
+        });
+    };
 
     return (
         <Modal
@@ -168,7 +216,7 @@ export const HostDetailModal: React.FC<HostDetailModalProps> = ({
                     </Col>
 
                     {/* Verification Status */}
-                    <Col span={12}>
+                     <Col span={12}>
                         <Card size="small" style={{ background: 'rgba(255, 255, 255, 0.05)', height: '100%' }}>
                             <Space direction="vertical" style={{ width: '100%' }} size="middle">
                                 <Text strong style={{ color: '#fff', fontSize: '14px' }}>
@@ -208,6 +256,57 @@ export const HostDetailModal: React.FC<HostDetailModalProps> = ({
                                         )}
                                     </div>
                                 )}
+                            </Space>
+                        </Card>
+                    </Col>
+
+                    {/* Certificates */}
+                    <Col span={12}>
+                        <Card size="small" style={{ background: 'rgba(255, 255, 255, 0.05)', height: '100%' }}>
+                            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                                <Text strong style={{ color: '#fff', fontSize: '14px' }}>
+                                    <Shield size={16} style={{ marginRight: '8px' }} />
+                                    Certificates
+                                </Text>
+                                <Divider style={{ margin: '8px 0', borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+
+                                <div>
+                                    {selectedHost.certificates && selectedHost.certificates.length > 0 ? (
+                                        <Space direction="vertical" style={{ width: '100%' }}>
+                                            {selectedHost.certificates.map((cert, idx) => (
+                                                <Tag key={idx} color="green" style={{ fontSize: '12px' }}>
+                                                    {cert.charAt(0).toUpperCase() + cert.slice(1)}
+                                                </Tag>
+                                            ))}
+                                            <Button
+                                                type="primary"
+                                                danger
+                                                size="small"
+                                                onClick={handleRemoveCertificate}
+                                                loading={loading}
+                                                style={{ marginTop: '8px' }}
+                                            >
+                                                Remove Certificate
+                                            </Button>
+                                        </Space>
+                                    ) : (
+                                        <Space direction="vertical" style={{ width: '100%' }}>
+                                            <Badge
+                                                status="error"
+                                                text={<span style={{ color: '#ff4d4f' }}>No Certificate</span>}
+                                            />
+                                            <Button
+                                                type="primary"
+                                                size="small"
+                                                onClick={handleAddCertificate}
+                                                loading={loading}
+                                                style={{ marginTop: '8px' }}
+                                            >
+                                                Add Certificate
+                                            </Button>
+                                        </Space>
+                                    )}
+                                </div>
                             </Space>
                         </Card>
                     </Col>
@@ -447,6 +546,19 @@ export const HostDetailModal: React.FC<HostDetailModalProps> = ({
                             </Card>
                         </Col>
                     )}
+                </Row>
+
+                {/* Profile Reviews */}
+                <Row gutter={[16, 16]}>
+                    <Col span={24}>
+                        <Card size="small" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
+                            <Text strong style={{ color: '#fff', fontSize: '14px' }}>
+                                Profile Reviews
+                            </Text>
+                            <Divider style={{ margin: '12px 0', borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                            <ProfileReviewsTab hostId={selectedHost._id} />
+                        </Card>
+                    </Col>
                 </Row>
             </div>
         </Modal>

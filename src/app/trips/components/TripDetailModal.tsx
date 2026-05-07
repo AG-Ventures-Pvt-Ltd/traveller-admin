@@ -923,8 +923,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ tripId, editing, onClose }) =
 
     const mutation = useMutation({
         mutationFn: (values: ReviewFormValues) => isEdit
-            ? baseAPI.patch(api.updateReview(tripId, editing!._id), values)
-            : baseAPI.post(api.addReview(tripId), values),
+            ? baseAPI.patch(api.updateReview(tripId, editing!._id), { ...values, type: 'trip' })
+            : baseAPI.post(api.addReview(tripId), { ...values, type: 'trip' }),
         onSuccess: () => {
             message.success(isEdit ? 'Review updated' : 'Review added');
             queryClient.invalidateQueries({ queryKey: ['trip-reviews', tripId] });
@@ -981,7 +981,7 @@ const ReviewsTab: React.FC<{ tripId: string }> = ({ tripId }) => {
     const { data, isLoading } = useQuery({
         queryKey: ['trip-reviews', tripId],
         queryFn: async () => {
-            const res = await baseAPI.get(api.getTripReviews(tripId));
+            const res = await baseAPI.get(`${api.getTripReviews(tripId)}?type=trip`);
             return res.data as ReviewsResponse;
         },
         enabled: !!tripId,
@@ -992,7 +992,7 @@ const ReviewsTab: React.FC<{ tripId: string }> = ({ tripId }) => {
     const totalReviews: number = data?.data?.totalReviews ?? 0;
 
     const deleteMutation = useMutation({
-        mutationFn: (reviewId: string) => baseAPI.delete(api.deleteReview(tripId, reviewId)),
+        mutationFn: (reviewId: string) => baseAPI.delete(`${api.deleteReview(tripId, reviewId)}?type=trip`),
         onSuccess: () => {
             message.success('Review deleted');
             queryClient.invalidateQueries({ queryKey: ['trip-reviews', tripId] });

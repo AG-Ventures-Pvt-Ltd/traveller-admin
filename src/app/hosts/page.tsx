@@ -18,7 +18,7 @@ import {
     message,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { Search, RefreshCw, Eye, Plus, Shield } from 'lucide-react';
+import { Search, RefreshCw, Eye, Plus, Shield, Key } from 'lucide-react';
 import { HostDetailModal } from './components/HostDetailModal';
 import { CreateHostModal } from './components/CreateHostModal';
 import { useGetData } from '@/services/useGetData';
@@ -109,6 +109,50 @@ export default function HostsPage() {
         setVerifyModalVisible(true);
     };
 
+    const handleGenerateToken = async (host: Host, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const res = await fetch('/api/generate-host-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hostId: host._id,
+                    email: host.email,
+                    fullName: host.fullName || host.username || 'Host'
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to generate token');
+            
+            Modal.success({
+                title: 'MCP Authentication Token',
+                content: (
+                    <div style={{ marginTop: 16 }}>
+                        <p>Copy this token and use it as <code>authCookie</code> in the MCP tool:</p>
+                        <Input.TextArea 
+                            value={data.token} 
+                            readOnly 
+                            autoSize={{ minRows: 3, maxRows: 6 }} 
+                            style={{ fontFamily: 'monospace' }}
+                        />
+                        <Button 
+                            style={{ marginTop: 16 }} 
+                            onClick={() => {
+                                navigator.clipboard.writeText(data.token);
+                                message.success('Copied to clipboard');
+                            }}
+                        >
+                            Copy to Clipboard
+                        </Button>
+                    </div>
+                ),
+                width: 500,
+            });
+        } catch (error: any) {
+            message.error(error.message);
+        }
+    };
+
     const isHostVerified = (host: Host | null) =>
         host ? (host.isVerified ?? host.isProfileVerified ?? false) : false;
 
@@ -194,6 +238,14 @@ export default function HostsPage() {
                             style={{
                                 color: isHostVerified(record) ? '#52c41a' : '#ff9c6e',
                             }}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Generate Auth Token">
+                        <Button
+                            type="text"
+                            icon={<Key size={16} />}
+                            onClick={(e) => handleGenerateToken(record, e)}
+                            style={{ color: '#faad14' }}
                         />
                     </Tooltip>
                     <Tooltip title="View Details">

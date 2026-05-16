@@ -101,7 +101,7 @@ export const TicketModal = ({ handleSendReply, modalVisible, setModalVisible, se
                         key={imgIndex}
                         width={100}
                         height={75}
-                        src={url}
+                        src={`${process.env.NEXT_PUBLIC_CLOUDFRONT_URL}${url}`}
                         className="object-cover rounded"
                         preview={{
                           mask: <Eye size={16} className="text-white" />

@@ -73,4 +73,11 @@ export const api = {
     updateCoupon: (id: string) => `/api/admin/v1/coupons/${id}`,
     toggleCoupon: (id: string) => `/api/admin/v1/coupons/${id}/toggle`,
     getCouponUsages: (id: string) => `/api/admin/v1/coupons/${id}/usages`,
+
+    // Active Locations
+    getActiveLocations: '/api/admin/v1/config/active-locations',
+    addActiveLocation: '/api/admin/v1/config/active-locations/add',
+    updateActiveLocation: (id: string) => `/api/admin/v1/config/active-locations/${id}`,
+    toggleActiveLocation: (id: string) => `/api/admin/v1/config/active-locations/${id}/toggle`,
+    deleteActiveLocation: (id: string) => `/api/admin/v1/config/active-locations/${id}`,
 } as const;

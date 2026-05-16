@@ -24,7 +24,7 @@ import {
     Switch,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
@@ -921,6 +921,351 @@ const FeaturedTripsTab: React.FC = () => {
     );
 };
 
+// ── Active Locations Tab ──────────────────────────────────────────────────────
+
+interface ActiveLocation {
+    _id: string;
+    location: {
+        type: string;
+        coordinates: [number, number];
+        address?: string;
+        city?: string;
+        state?: string;
+        country?: string;
+    };
+    isActive: boolean;
+}
+
+interface ActiveLocationModalProps {
+    open: boolean;
+    entry: ActiveLocation | null;
+    onClose: () => void;
+}
+
+const ActiveLocationModal: React.FC<ActiveLocationModalProps> = ({ open, entry, onClose }) => {
+    const [form] = Form.useForm();
+    const queryClient = useQueryClient();
+
+    React.useEffect(() => {
+        if (open) {
+            if (entry) {
+                form.setFieldsValue({
+                    lat: entry.location.coordinates[1],
+                    lng: entry.location.coordinates[0],
+                    address: entry.location.address || '',
+                    city: entry.location.city || '',
+                    state: entry.location.state || '',
+                    country: entry.location.country || 'India',
+                });
+            } else {
+                form.resetFields();
+                form.setFieldsValue({ country: 'India' });
+            }
+        }
+    }, [open, entry, form]);
+
+    const { mutate: save, isPending } = useMutation({
+        mutationFn: async (values: {
+            lat: number;
+            lng: number;
+            address?: string;
+            city?: string;
+            state?: string;
+            country?: string;
+        }) => {
+            const payload = {
+                coordinates: [Number(values.lng), Number(values.lat)],
+                address: values.address?.trim() || undefined,
+                city: values.city?.trim() || undefined,
+                state: values.state?.trim() || undefined,
+                country: values.country?.trim() || 'India',
+            };
+            if (entry?._id) {
+                const { data } = await baseAPI.put(api.updateActiveLocation(entry._id), payload);
+                return data;
+            } else {
+                const { data } = await baseAPI.post(api.addActiveLocation, payload);
+                return data;
+            }
+        },
+        onSuccess: () => {
+            message.success(entry?._id ? 'Location updated!' : 'Location added!');
+            queryClient.invalidateQueries({ queryKey: ['active-locations'] });
+            onClose();
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to save location'),
+    });
+
+    return (
+        <Modal
+            title={entry?._id ? 'Edit Active Location' : 'Add Active Location'}
+            open={open}
+            onCancel={onClose}
+            onOk={() => form.submit()}
+            confirmLoading={isPending}
+            okText={entry?._id ? 'Update' : 'Add'}
+            width={520}
+        >
+            <Form form={form} layout="vertical" onFinish={save} style={{ marginTop: 16 }}>
+                <Form.Item label="Coordinates (required)">
+                    <Space>
+                        <Form.Item
+                            name="lat"
+                            noStyle
+                            rules={[
+                                { required: true, message: 'Latitude is required' },
+                                { type: 'number', min: -90, max: 90, message: 'Lat: -90 to 90' },
+                            ]}
+                        >
+                            <InputNumber
+                                placeholder="Latitude"
+                                style={{ width: 170 }}
+                                step={0.0001}
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            name="lng"
+                            noStyle
+                            rules={[
+                                { required: true, message: 'Longitude is required' },
+                                { type: 'number', min: -180, max: 180, message: 'Lng: -180 to 180' },
+                            ]}
+                        >
+                            <InputNumber
+                                placeholder="Longitude"
+                                style={{ width: 170 }}
+                                step={0.0001}
+                            />
+                        </Form.Item>
+                    </Space>
+                </Form.Item>
+
+                <Form.Item name="address" label="Address">
+                    <Input placeholder="e.g. Near Mall Road Bus Stand" />
+                </Form.Item>
+
+                <Form.Item name="city" label="City">
+                    <Input placeholder="e.g. Manali" />
+                </Form.Item>
+
+                <Form.Item name="state" label="State">
+                    <Select
+                        showSearch
+                        allowClear
+                        placeholder="Select a state"
+                        optionFilterProp="label"
+                        options={INDIAN_STATES.map((s) => ({
+                            value: s.name,
+                            label: `${s.name} (${s.code})`,
+                        }))}
+                    />
+                </Form.Item>
+
+                <Form.Item name="country" label="Country" initialValue="India">
+                    <Input placeholder="India" />
+                </Form.Item>
+            </Form>
+        </Modal>
+    );
+};
+
+const ActiveLocationsTab: React.FC = () => {
+    const queryClient = useQueryClient();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingEntry, setEditingEntry] = useState<ActiveLocation | null>(null);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['active-locations'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getActiveLocations);
+            return data.data;
+        },
+        refetchOnWindowFocus: false,
+    });
+
+    const locations: ActiveLocation[] = data?.activeLocations || [];
+
+    const filtered = locations.filter(
+        (loc) =>
+            !search ||
+            loc.location.city?.toLowerCase().includes(search.toLowerCase()) ||
+            loc.location.state?.toLowerCase().includes(search.toLowerCase()) ||
+            loc.location.address?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const { mutate: toggleLocation } = useMutation({
+        mutationFn: async (id: string) => {
+            const { data } = await baseAPI.patch(api.toggleActiveLocation(id));
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Location status updated');
+            queryClient.invalidateQueries({ queryKey: ['active-locations'] });
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to toggle'),
+    });
+
+    const { mutate: deleteLocation } = useMutation({
+        mutationFn: async (id: string) => {
+            const { data } = await baseAPI.delete(api.deleteActiveLocation(id));
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Location deleted');
+            queryClient.invalidateQueries({ queryKey: ['active-locations'] });
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to delete'),
+    });
+
+    const columns: TableColumnsType<ActiveLocation> = [
+        {
+            title: 'City',
+            key: 'city',
+            render: (_, record) => (
+                <Text strong>{record.location.city || <Text type="secondary">—</Text>}</Text>
+            ),
+            sorter: (a, b) =>
+                (a.location.city || '').localeCompare(b.location.city || ''),
+        },
+        {
+            title: 'State',
+            key: 'state',
+            render: (_, record) =>
+                record.location.state ? (
+                    <Tag>{record.location.state}</Tag>
+                ) : (
+                    <Text type="secondary">—</Text>
+                ),
+        },
+        {
+            title: 'Address',
+            key: 'address',
+            render: (_, record) =>
+                record.location.address ? (
+                    <Text style={{ fontSize: 12 }}>{record.location.address}</Text>
+                ) : (
+                    <Text type="secondary">—</Text>
+                ),
+        },
+        {
+            title: 'Coordinates',
+            key: 'coords',
+            width: 200,
+            render: (_, record) => {
+                const coords = record.location.coordinates;
+                return (
+                    <Tooltip title={`Lat: ${coords[1]}, Lng: ${coords[0]}`}>
+                        <Tag icon={<MapPin size={12} />} color="geekblue">
+                            {coords[1]?.toFixed(4)}, {coords[0]?.toFixed(4)}
+                        </Tag>
+                    </Tooltip>
+                );
+            },
+        },
+        {
+            title: 'Active',
+            key: 'isActive',
+            width: 90,
+            render: (_, record) => (
+                <Switch
+                    checked={record.isActive}
+                    size="small"
+                    onChange={() => toggleLocation(record._id)}
+                />
+            ),
+            filters: [
+                { text: 'Active', value: true },
+                { text: 'Inactive', value: false },
+            ],
+            onFilter: (value, record) => record.isActive === value,
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            width: 110,
+            render: (_, record) => (
+                <Space>
+                    <Button
+                        size="small"
+                        icon={<Pencil size={13} />}
+                        onClick={() => {
+                            setEditingEntry(record);
+                            setModalOpen(true);
+                        }}
+                    >
+                        Edit
+                    </Button>
+                    <Popconfirm
+                        title="Delete this location?"
+                        onConfirm={() => deleteLocation(record._id)}
+                        okText="Delete"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Button danger size="small" icon={<Trash2 size={13} />} />
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
+
+    return (
+        <div>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 16,
+                    gap: 12,
+                }}
+            >
+                <Input.Search
+                    placeholder="Search by city, state or address…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ maxWidth: 320 }}
+                    allowClear
+                />
+                <Text type="secondary">{filtered.length} locations</Text>
+                <Button
+                    type="primary"
+                    icon={<PlusCircle size={14} />}
+                    onClick={() => {
+                        setEditingEntry(null);
+                        setModalOpen(true);
+                    }}
+                >
+                    Add Location
+                </Button>
+            </div>
+
+            <Table
+                columns={columns}
+                dataSource={filtered}
+                loading={isLoading}
+                rowKey="_id"
+                size="small"
+                pagination={{ pageSize: 20 }}
+                scroll={{ x: 700 }}
+                rowClassName={(record) => (!record.isActive ? 'row-inactive' : '')}
+            />
+
+            <ActiveLocationModal
+                open={modalOpen}
+                entry={editingEntry}
+                onClose={() => {
+                    setModalOpen(false);
+                    setEditingEntry(null);
+                }}
+            />
+        </div>
+    );
+};
+
 // ── Main Configs Page ─────────────────────────────────────────────────────────
 
 export default function ConfigsPage() {
@@ -955,6 +1300,16 @@ export default function ConfigsPage() {
             ),
             children: <FeaturedTripsTab />,
         },
+        {
+            key: 'activelocations',
+            label: (
+                <Space>
+                    <Navigation size={16} />
+                    Active Locations
+                </Space>
+            ),
+            children: <ActiveLocationsTab />,
+        },
     ];
 
     return (
@@ -976,7 +1331,7 @@ export default function ConfigsPage() {
                         App Configs
                     </Title>
                     <Text type="secondary">
-                        Manage trip categories, city database, and landing page featured trips
+                        Manage trip categories, city database, landing page featured trips, and active locations
                     </Text>
                 </div>
 

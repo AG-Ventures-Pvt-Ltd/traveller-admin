@@ -80,4 +80,8 @@ export const api = {
     updateActiveLocation: (id: string) => `/api/admin/v1/config/active-locations/${id}`,
     toggleActiveLocation: (id: string) => `/api/admin/v1/config/active-locations/${id}/toggle`,
     deleteActiveLocation: (id: string) => `/api/admin/v1/config/active-locations/${id}`,
+
+    // Signup Bonus
+    getSignupBonus: '/api/admin/v1/config/signup-bonus',
+    updateSignupBonus: '/api/admin/v1/config/signup-bonus',
 } as const;

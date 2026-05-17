@@ -24,7 +24,7 @@ import {
     Switch,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
@@ -1266,6 +1266,196 @@ const ActiveLocationsTab: React.FC = () => {
     );
 };
 
+// ── Signup Bonus Tab ──────────────────────────────────────────────────────────
+
+interface SignupBonusData {
+    signupBonus: {
+        amount: number;
+        isEnabled: boolean;
+    };
+}
+
+const SignupBonusTab: React.FC = () => {
+    const [form] = Form.useForm();
+    const [editVisible, setEditVisible] = useState(false);
+    const queryClient = useQueryClient();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['signup-bonus'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getSignupBonus);
+            return data.data as SignupBonusData;
+        },
+    });
+
+    const { mutate: updateBonus, isPending } = useMutation({
+        mutationFn: async (values: { amount: number; isEnabled: boolean }) => {
+            const { data } = await baseAPI.put(api.updateSignupBonus, values);
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Signup bonus updated successfully!');
+            queryClient.invalidateQueries({ queryKey: ['signup-bonus'] });
+            setEditVisible(false);
+            form.resetFields();
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to update signup bonus'),
+    });
+
+    React.useEffect(() => {
+        if (editVisible && data?.signupBonus) {
+            form.setFieldsValue({
+                amount: data.signupBonus.amount,
+                isEnabled: data.signupBonus.isEnabled,
+            });
+        }
+    }, [editVisible, data, form]);
+
+    return (
+        <div>
+            <Spin spinning={isLoading}>
+                {data?.signupBonus ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                        {/* Current Status Card */}
+                        <Card
+                            style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                            }}
+                        >
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                                <div>
+                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                        Bonus Amount
+                                    </Text>
+                                    <div style={{ marginTop: 8, fontSize: 28, fontWeight: 600, color: '#1890ff' }}>
+                                        ₹{data.signupBonus.amount.toLocaleString('en-IN')}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                        Status
+                                    </Text>
+                                    <div style={{ marginTop: 8 }}>
+                                        <Tag
+                                            color={data.signupBonus.isEnabled ? 'green' : 'red'}
+                                            style={{ fontSize: 12, padding: '6px 12px' }}
+                                        >
+                                            {data.signupBonus.isEnabled ? 'ENABLED' : 'DISABLED'}
+                                        </Tag>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Edit Button */}
+                        <Button
+                            type="primary"
+                            onClick={() => setEditVisible(true)}
+                            size="large"
+                            style={{ width: '100%' }}
+                        >
+                            Edit Signup Bonus
+                        </Button>
+
+                        {/* Info Message */}
+                        <Card
+                            style={{
+                                background: 'rgba(24, 144, 255, 0.1)',
+                                border: '1px solid rgba(24, 144, 255, 0.2)',
+                            }}
+                            size="small"
+                        >
+                            <Text style={{ color: '#1890ff', fontSize: 12 }}>
+                                💡 <strong>Tip:</strong> This bonus amount will be credited to new users who sign up. Users can see this
+                                in the app and use it for their first booking if enabled.
+                            </Text>
+                        </Card>
+                    </div>
+                ) : (
+                    <Empty description="No signup bonus data found" />
+                )}
+            </Spin>
+
+            {/* Edit Modal */}
+            <Modal
+                title="Edit Signup Bonus"
+                open={editVisible}
+                onCancel={() => {
+                    setEditVisible(false);
+                    form.resetFields();
+                }}
+                onOk={() => form.submit()}
+                confirmLoading={isPending}
+                okText="Update"
+                width={440}
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={(values) => {
+                        updateBonus({
+                            amount: values.amount,
+                            isEnabled: values.isEnabled,
+                        });
+                    }}
+                    style={{ marginTop: 16 }}
+                >
+                    <Form.Item
+                        name="amount"
+                        label="Bonus Amount (₹)"
+                        rules={[
+                            { required: true, message: 'Please enter the bonus amount' },
+                            {
+                                pattern: /^\d+(\.\d{1,2})?$/,
+                                message: 'Please enter a valid amount',
+                            },
+                        ]}
+                    >
+                        <InputNumber
+                            min={0}
+                            max={100000}
+                            placeholder="e.g. 500"
+                            style={{ width: '100%' }}
+                            precision={0}
+                            formatter={(value) => `₹${value}`}
+                            parser={(value) => parseInt(value?.replace('₹', '') || '0')}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="isEnabled"
+                        label="Enable Signup Bonus"
+                        valuePropName="checked"
+                        initialValue={false}
+                    >
+                        <Switch />
+                    </Form.Item>
+
+                    <Form.Item noStyle>
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                            <div
+                                style={{
+                                    padding: '12px',
+                                    background: 'rgba(255, 193, 7, 0.1)',
+                                    borderRadius: '6px',
+                                    border: '1px solid rgba(255, 193, 7, 0.2)',
+                                }}
+                            >
+                                <Text style={{ color: '#ffc107', fontSize: 12 }}>
+                                    <strong>⚠️ Note:</strong> Once enabled, new users will see this bonus and can apply it to
+                                    their bookings. The amount will be deducted from their wallet.
+                                </Text>
+                            </div>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
+};
+
 // ── Main Configs Page ─────────────────────────────────────────────────────────
 
 export default function ConfigsPage() {
@@ -1310,6 +1500,16 @@ export default function ConfigsPage() {
             ),
             children: <ActiveLocationsTab />,
         },
+        {
+            key: 'signupbonus',
+            label: (
+                <Space>
+                    <Gift size={16} />
+                    Signup Bonus
+                </Space>
+            ),
+            children: <SignupBonusTab />,
+        },
     ];
 
     return (
@@ -1331,7 +1531,7 @@ export default function ConfigsPage() {
                         App Configs
                     </Title>
                     <Text type="secondary">
-                        Manage trip categories, city database, landing page featured trips, and active locations
+                        Manage trip categories, cities, landing page featured trips, active locations, and signup bonuses
                     </Text>
                 </div>
 

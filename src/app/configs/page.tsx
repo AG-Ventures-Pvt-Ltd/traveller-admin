@@ -1420,7 +1420,7 @@ const SignupBonusTab: React.FC = () => {
                             style={{ width: '100%' }}
                             precision={0}
                             formatter={(value) => `₹${value}`}
-                            parser={(value) => parseInt(value?.replace('₹', '') || '0')}
+                            parser={(value) => Number(value?.replace('₹', '') || '0') as any}
                         />
                     </Form.Item>
 

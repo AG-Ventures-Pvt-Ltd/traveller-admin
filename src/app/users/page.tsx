@@ -1,51 +1,57 @@
 'use client'
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
 import {
   Table, Card, Input, Button, Space, Tag, Avatar, Typography, ConfigProvider, theme
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Search, RefreshCw, Eye } from 'lucide-react';
+import { Search, RefreshCw, Eye, Wallet } from 'lucide-react';
 
 import { User } from './constant';
 import { UserDetailModal } from './UserDetailModal/UserDetailModal';
+import { AddWalletCashModal } from './AddWalletCashModal/AddWalletCashModal';
 import { formatDate } from '@/common/utils/date';
 import { useGetData } from '@/services/useGetData';
 import { api } from '@/common/constants/api.urls';
 
 const { Title, Text } = Typography;
 
+const LIMIT = 10;
+
 export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [searchText, setSearchText] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [walletModalUser, setWalletModalUser] = useState<User | null>(null);
+  const [walletModalVisible, setWalletModalVisible] = useState(false);
 
   const { data: usersData, isLoading, refetch } = useGetData({
-    key: ['client-users'],
+    key: ['client-users', String(page), searchText],
     url: api.getClientUsers,
-    params: { page, limit: 10 },
+    params: { page, limit: LIMIT, ...(searchText ? { search: searchText } : {}) },
   });
 
-  const users = useMemo(() => usersData?.data.data || [], [usersData]);
-  const total: number = usersData?.total || 0;
+  const users: User[] = useMemo(() => usersData?.data?.data || [], [usersData]);
+  const total: number = usersData?.data?.totalItems || 0;
 
-  const filteredUsers = useMemo(() => {
-    if (!searchText) return users;
-    const lower = searchText.toLowerCase();
-    return users.filter(
-      (u: User) =>
-        u.username?.toLowerCase().includes(lower) ||
-        u.email?.toLowerCase().includes(lower)
-    );
-  }, [users, searchText]);
+  const handleSearch = useCallback(() => {
+    setPage(1);
+    setSearchText(searchInput);
+  }, [searchInput]);
+
+  const handleClear = useCallback(() => {
+    setSearchInput('');
+    setSearchText('');
+    setPage(1);
+    refetch();
+  }, [refetch]);
 
   const columns: ColumnsType<User> = [
     {
       title: 'Username',
       key: 'username',
-      fixed: 'left',
-      width: 220,
       render: (_, record) => (
         <Space>
           <Avatar
@@ -63,7 +69,6 @@ export default function UsersPage() {
       title: 'Phone',
       dataIndex: 'phone',
       key: 'phone',
-      width: 180,
       render: (phone) =>
         phone ? (
           <Text style={{ color: '#8c8c8c' }}>{phone}</Text>
@@ -75,7 +80,6 @@ export default function UsersPage() {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      width: 240,
       render: (email) => <Text style={{ color: '#8c8c8c' }}>{email}</Text>,
     },
     {
@@ -83,6 +87,7 @@ export default function UsersPage() {
       dataIndex: 'isVerified',
       key: 'isVerified',
       width: 140,
+      align: 'center' as const,
       render: (verified: boolean) =>
         verified ? (
           <Tag color="success">Verified</Tag>
@@ -91,30 +96,43 @@ export default function UsersPage() {
         ),
     },
     {
-      title: 'Created At',
+      title: 'Joined',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 130,
-      render: (date) => formatDate(date),
+      width: 120,
+      render: (date) => <Text style={{ color: '#8c8c8c' }}>{formatDate(date)}</Text>,
     },
     {
       title: 'Actions',
       key: 'actions',
-      fixed: 'right',
-      width: 90,
+      width: 160,
       render: (_, record) => (
-        <Button
-          size="small"
-          type="text"
-          icon={<Eye size={14} />}
-          style={{ color: '#1890ff' }}
-          onClick={() => {
-            setSelectedUser(record);
-            setModalVisible(true);
-          }}
-        >
-          View
-        </Button>
+        <Space>
+          <Button
+            size="small"
+            type="text"
+            icon={<Eye size={14} />}
+            style={{ color: '#1890ff' }}
+            onClick={() => {
+              setSelectedUser(record);
+              setModalVisible(true);
+            }}
+          >
+            View
+          </Button>
+          <Button
+            size="small"
+            type="text"
+            icon={<Wallet size={14} />}
+            style={{ color: '#52c41a' }}
+            onClick={() => {
+              setWalletModalUser(record);
+              setWalletModalVisible(true);
+            }}
+          >
+            Add Cash
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -152,21 +170,27 @@ export default function UsersPage() {
             <Input
               placeholder="Search by username or email..."
               prefix={<Search size={16} style={{ color: '#8c8c8c' }} />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onPressEnter={handleSearch}
               allowClear
+              onClear={handleClear}
               style={{ width: 300 }}
             />
             <Button
-              icon={<RefreshCw size={16} />}
-              onClick={() => {
-                setSearchText('');
-                setPage(1);
-                refetch();
-              }}
+              type="primary"
+              icon={<Search size={14} />}
+              onClick={handleSearch}
               loading={isLoading}
             >
-              Refresh
+              Search
+            </Button>
+            <Button
+              icon={<RefreshCw size={16} />}
+              onClick={handleClear}
+              loading={isLoading}
+            >
+              Reset
             </Button>
           </Space>
         </Card>
@@ -180,14 +204,14 @@ export default function UsersPage() {
         >
           <Table<User>
             columns={columns}
-            dataSource={filteredUsers}
+            dataSource={users}
             rowKey="_id"
             loading={isLoading}
-            scroll={{ x: 800 }}
             pagination={{
               current: page,
-              pageSize: 10,
+              pageSize: LIMIT,
               total,
+              showSizeChanger: false,
               showTotal: (t, range) => `${range[0]}-${range[1]} of ${t} users`,
               onChange: (p) => setPage(p),
             }}
@@ -199,6 +223,13 @@ export default function UsersPage() {
         selectedUser={selectedUser}
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
+      />
+
+      <AddWalletCashModal
+        open={walletModalVisible}
+        user={walletModalUser}
+        onClose={() => setWalletModalVisible(false)}
+        onSuccess={() => refetch()}
       />
     </ConfigProvider>
   );

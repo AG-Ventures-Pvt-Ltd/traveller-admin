@@ -1,23 +1,52 @@
 'use client'
 import React, { Suspense } from 'react'
-import { PERMISSIONS } from '@/common/constants/permissions';
 import { useAuthStore } from '@/store/auth.store';
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { MenuItems } from './MenuItems';
+import { useRouter, usePathname } from 'next/navigation';
+import { MenuItems, PermissionedItem } from './MenuItems';
 import { Layout, Typography, Menu } from 'antd';
 import { Shield, Settings, LogOut } from 'lucide-react'
 
+// Recursively filter items by user permissions
+function filterItems(items: PermissionedItem[], hasPermission: (p: string) => boolean): PermissionedItem[] {
+    return items.reduce<PermissionedItem[]>((acc, item) => {
+        if (item.children) {
+            const filteredChildren = filterItems(item.children, hasPermission);
+            if (filteredChildren.length > 0) {
+                acc.push({ ...item, children: filteredChildren });
+            }
+        } else if (!item.permission || hasPermission(item.permission)) {
+            acc.push(item);
+        }
+        return acc;
+    }, []);
+}
+
+// Strip permission field so Ant Design Menu doesn't receive unknown props
+function toAntdItems(items: PermissionedItem[]): object[] {
+    return items.map(({ permission, children, ...rest }) => ({
+        ...rest,
+        ...(children ? { children: toAntdItems(children) } : {}),
+    }));
+}
+
+// Find which group key contains the currently active route
+function findOpenGroupKey(items: PermissionedItem[], activeKey: string): string[] {
+    for (const item of items) {
+        if (item.children?.some(child => child.key === activeKey)) {
+            return [item.key];
+        }
+    }
+    return [];
+}
 
 const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
 
     const { Sider } = Layout
     const { Title } = Typography;
 
-
     const router = useRouter()
     const pathname = usePathname()
-    const searchParams = useSearchParams();
     const selectedKey = pathname?.split('/').pop() || 'dashboard';
 
     const handleMenuClick = ({ key }: { key: string }) => {
@@ -30,8 +59,9 @@ const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
 
     const { hasPermission, logout } = useAuthStore();
 
-    // Filter menu items based on user's permissions
-    const filteredMenuItems = MenuItems.filter(item => hasPermission(item.permission));
+    const filteredItems = filterItems(MenuItems, hasPermission);
+    const antdItems = toAntdItems(filteredItems);
+    const defaultOpenKeys = collapsed ? [] : findOpenGroupKey(filteredItems, selectedKey);
 
     return (
         <Sider
@@ -56,12 +86,10 @@ const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
                 <Menu
                     mode="inline"
                     selectedKeys={[selectedKey]}
+                    defaultOpenKeys={defaultOpenKeys}
                     onClick={handleMenuClick}
                     className="!bg-transparent !border-none mt-4"
-                    items={filteredMenuItems.map(item => {
-                        const { permission, ...rest } = item;
-                        return rest;
-                    })}
+                    items={antdItems as any}
                 />
                 <div>
                     <Menu
@@ -80,14 +108,12 @@ const SideBarContent = ({ collapsed }: { collapsed: boolean }) => {
                         onClick={logout}
                         className="!bg-transparent !border-none mt-4"
                         items={[{
-                            key: 'settings',
+                            key: 'logout',
                             icon: <LogOut size={18} />,
-                            label: 'logout',
+                            label: 'Logout',
                         }]}
                     />
-
                 </div>
-                
             </div>
         </Sider>
     )

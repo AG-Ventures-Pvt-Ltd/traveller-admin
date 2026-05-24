@@ -43,6 +43,7 @@ export const api = {
     getPublishedTripsForDropdown: '/api/admin/v1/landing-page/trips',
 
     // Trips
+    getTripSummaryBySlug: (slug: string) => `/api/admin/v1/trips/slug/${slug}`,
     getTrips: '/api/admin/v1/trips',
     getTripById: (id: string) => `/api/admin/v1/trips/${id}`,
     publishTrip: (id: string) => `/api/admin/v1/trips/${id}/publish`,
@@ -84,4 +85,11 @@ export const api = {
     // Signup Bonus
     getSignupBonus: '/api/admin/v1/config/signup-bonus',
     updateSignupBonus: '/api/admin/v1/config/signup-bonus',
+
+    // Wallet
+    addWalletCash: (userId: string) => `/api/admin/v1/users/${userId}/wallet/add-cash`,
+    getUserCancelledBookings: (userId: string) => `/api/admin/v1/users/${userId}/bookings/cancelled`,
+
+    // Emails
+    sendEngagementEmail: '/api/admin/v1/emails/send-engagement',
 } as const;

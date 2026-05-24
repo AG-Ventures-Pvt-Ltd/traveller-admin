@@ -19,6 +19,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
         PERMISSIONS.SECURITY,
         PERMISSIONS.SERVER_HEALTH,
         PERMISSIONS.CONFIGS,
+        PERMISSIONS.EMAILS,
     ],
 
     admin: [
@@ -31,6 +32,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
         PERMISSIONS.PAYMENTS,
         PERMISSIONS.USER_SUPPORT,
         PERMISSIONS.CONFIGS,
+        PERMISSIONS.EMAILS,
     ],
 
     user: [

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { Row, Col, Card, Statistic, Skeleton, Tooltip, Typography } from 'antd';
-import { Map, Users, Backpack, CalendarCheck, CheckCircle2 } from 'lucide-react';
+import { Row, Col, Card, Statistic, Skeleton, Tooltip, Typography, Divider } from 'antd';
+import { Map, Users, Backpack, CalendarCheck, CheckCircle2, Wallet, CircleDollarSign, Ban, TrendingUp } from 'lucide-react';
 import { useGetData } from '@/services/useGetData';
 import { api } from '@/common/constants/api.urls';
 
@@ -54,9 +54,53 @@ const STAT_CONFIG = [
     border: 'rgba(235, 47, 150, 0.25)',
     tooltip: 'All-time confirmed bookings',
   },
+  {
+    key: 'totalRevenue',
+    label: 'Total Revenue',
+    icon: TrendingUp,
+    color: '#52c41a',
+    bg: 'rgba(82, 196, 26, 0.1)',
+    border: 'rgba(82, 196, 26, 0.25)',
+    tooltip: 'Sum of grandTotal across all confirmed bookings',
+    prefix: '₹',
+  },
+] as const;
+
+const WALLET_STAT_CONFIG = [
+  {
+    key: 'totalWondrrCashGiven',
+    label: 'Total Wondrr Cash Given',
+    icon: Wallet,
+    color: '#52c41a',
+    bg: 'rgba(82, 196, 26, 0.1)',
+    border: 'rgba(82, 196, 26, 0.25)',
+    tooltip: 'Cumulative Wondrr Cash credited to all users (all-time)',
+    prefix: '₹',
+  },
+  {
+    key: 'totalActiveCash',
+    label: 'Active Wondrr Cash',
+    icon: CircleDollarSign,
+    color: '#1890ff',
+    bg: 'rgba(24, 144, 255, 0.1)',
+    border: 'rgba(24, 144, 255, 0.25)',
+    tooltip: 'Total Wondrr Cash currently active and available in user wallets',
+    prefix: '₹',
+  },
+  {
+    key: 'totalExpiredCash',
+    label: 'Expired Wondrr Cash',
+    icon: Ban,
+    color: '#ff4d4f',
+    bg: 'rgba(255, 77, 79, 0.1)',
+    border: 'rgba(255, 77, 79, 0.25)',
+    tooltip: 'Total Wondrr Cash that has expired across all user wallets',
+    prefix: '₹',
+  },
 ] as const;
 
 type StatKey = typeof STAT_CONFIG[number]['key'];
+type WalletStatKey = typeof WALLET_STAT_CONFIG[number]['key'];
 
 interface StatsData {
   totalActiveTrips?: number;
@@ -64,6 +108,10 @@ interface StatsData {
   totalTravelers?: number;
   totalActiveBatches?: number;
   totalSuccessfulBookings?: number;
+  totalRevenue?: number;
+  totalWondrrCashGiven?: number;
+  totalActiveCash?: number;
+  totalExpiredCash?: number;
 }
 
 interface ApiStatsResponse {
@@ -71,13 +119,14 @@ interface ApiStatsResponse {
 }
 
 interface StatCardProps {
-  config: typeof STAT_CONFIG[number];
+  config: (typeof STAT_CONFIG[number]) | (typeof WALLET_STAT_CONFIG[number]);
   value: number | undefined;
   loading: boolean;
 }
 
 const StatCard = ({ config, value, loading }: StatCardProps) => {
   const Icon = config.icon;
+  const prefix = 'prefix' in config ? config.prefix : undefined;
   return (
     <Tooltip title={config.tooltip} placement="top">
       <Card
@@ -102,7 +151,8 @@ const StatCard = ({ config, value, loading }: StatCardProps) => {
                   </span>
                 }
                 value={value ?? 0}
-                styles={{ content: { color: config.color, fontSize: 32, fontWeight: 700 } }}
+                prefix={prefix}
+                styles={{ content: { color: config.color, fontSize: 28, fontWeight: 700 } }}
               />
             )}
           </div>
@@ -135,18 +185,50 @@ const DashboardStats = () => {
     url: api.getDashboardStats,
   });
 
+  const statsData = (stats as ApiStatsResponse)?.data;
+
   return (
-    <Row gutter={[16, 16]}>
-      {STAT_CONFIG.map((config) => (
-        <Col key={config.key} xs={24} sm={12} lg={8} xl={8} xxl={4} style={{ flex: '1 1 0' }}>
-          <StatCard
-            config={config}
-            value={(stats as ApiStatsResponse)?.data?.[config.key as StatKey]}
-            loading={isLoading}
-          />
-        </Col>
-      ))}
-    </Row>
+    <>
+      <Row gutter={[16, 16]}>
+        {STAT_CONFIG.map((config) => (
+          <Col key={config.key} xs={24} sm={12} lg={8} xl={8} xxl={4} style={{ flex: '1 1 0' }}>
+            <StatCard
+              config={config}
+              value={statsData?.[config.key as StatKey]}
+              loading={isLoading}
+            />
+          </Col>
+        ))}
+      </Row>
+
+      <Divider style={{ borderColor: 'rgba(255,255,255,0.08)', margin: '28px 0 20px' }} />
+
+      <Text
+        style={{
+          color: '#8c8c8c',
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          display: 'block',
+          marginBottom: 14,
+        }}
+      >
+        Wondrr Cash
+      </Text>
+
+      <Row gutter={[16, 16]}>
+        {WALLET_STAT_CONFIG.map((config) => (
+          <Col key={config.key} xs={24} sm={8}>
+            <StatCard
+              config={config}
+              value={statsData?.[config.key as WalletStatKey]}
+              loading={isLoading}
+            />
+          </Col>
+        ))}
+      </Row>
+    </>
   );
 };
 
@@ -171,3 +253,4 @@ export default function Dashboard() {
     </Suspense>
   );
 }
+

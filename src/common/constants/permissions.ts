@@ -15,6 +15,7 @@ export const PERMISSIONS = {
   SERVER_HEALTH: 'serverhealth',
   CONFIGS: 'configs',
   COUPONS: 'coupons',
+  EMAILS: 'emails',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

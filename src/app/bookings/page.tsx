@@ -25,14 +25,12 @@ const Bookings = () => {
 
 
     const { data: bookingsData } = useGetData({ 
-        key: ['bookings'],
+        key: ['bookings', String(pagination.current), String(pagination.pageSize), statusFilter],
         url : api.getBookings,
         params: {
             status: statusFilter || undefined,
             page: pagination.current,
             limit: pagination.pageSize,
-            sort: 'createdAt',
-            order: 'desc',
         }
      });
 

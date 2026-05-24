@@ -3,13 +3,13 @@ import {
   Home, Users, ShoppingCart, Shield, Package, CreditCard,
   Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail
 } from 'lucide-react';
-import { PERMISSIONS } from '@/common/constants/permissions';
+import { PERMISSIONS, Permission } from '@/common/constants/permissions';
 
 export type PermissionedItem = {
   key: string;
   icon: React.ReactNode;
   label: string;
-  permission?: string;
+  permission?: Permission;
   children?: PermissionedItem[];
 };
 

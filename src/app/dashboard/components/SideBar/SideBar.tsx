@@ -4,11 +4,12 @@ import { useAuthStore } from '@/store/auth.store';
 
 import { useRouter, usePathname } from 'next/navigation';
 import { MenuItems, PermissionedItem } from './MenuItems';
+import type { Permission } from '@/common/constants/permissions';
 import { Layout, Typography, Menu } from 'antd';
 import { Shield, Settings, LogOut } from 'lucide-react'
 
 // Recursively filter items by user permissions
-function filterItems(items: PermissionedItem[], hasPermission: (p: string) => boolean): PermissionedItem[] {
+function filterItems(items: PermissionedItem[], hasPermission: (p: Permission) => boolean): PermissionedItem[] {
     return items.reduce<PermissionedItem[]>((acc, item) => {
         if (item.children) {
             const filteredChildren = filterItems(item.children, hasPermission);

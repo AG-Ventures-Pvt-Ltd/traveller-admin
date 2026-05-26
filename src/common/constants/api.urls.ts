@@ -11,6 +11,13 @@ export const api = {
     login: '/api/admin/v1/login',
 
     getApiLogs: '/api/admin/v1/api-logs/logs',
+
+    // API Analytics
+    getApiAnalyticsSummary: '/api/admin/v1/api-analytics/summary',
+    getApiAnalyticsEndpoints: '/api/admin/v1/api-analytics/endpoints',
+    getApiAnalyticsTrend: '/api/admin/v1/api-analytics/trend',
+    getApiAnalyticsEndpointTrend: '/api/admin/v1/api-analytics/endpoint-trend',
+
     getBookings: '/api/client/v1/bookings/all',
 
     getHosts: '/api/admin/v1/hosts',

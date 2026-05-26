@@ -11,6 +11,7 @@ export const PERMISSIONS = {
   ADMIN_USERS: 'adminusers',
   ERROR_LOGS: 'errorlogs',
   API_LOGS: 'apilogs',
+  API_ANALYTICS: 'apianalytics',
   SECURITY: 'security',
   SERVER_HEALTH: 'serverhealth',
   CONFIGS: 'configs',

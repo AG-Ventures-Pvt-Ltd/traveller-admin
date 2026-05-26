@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Home, Users, ShoppingCart, Shield, Package, CreditCard,
-  Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail
+  Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail, BarChart2
 } from 'lucide-react';
 import { PERMISSIONS, Permission } from '@/common/constants/permissions';
 
@@ -98,6 +98,12 @@ export const MenuItems: PermissionedItem[] = [
         icon: <Activity size={16} />,
         label: 'API Logs',
         permission: PERMISSIONS.API_LOGS,
+      },
+      {
+        key: 'apiAnalytics',
+        icon: <BarChart2 size={16} />,
+        label: 'API Analytics',
+        permission: PERMISSIONS.API_ANALYTICS,
       },
       {
         key: 'serverHealth',

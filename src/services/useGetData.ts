@@ -5,12 +5,13 @@ interface queryProps {
   key: string[]
   url: string
   params?: Record<string, unknown>
+  enabled?: boolean
 }
 
 
 
 // Accepts params for query string (e.g., pagination)
-export const useGetData = ({ key, url, params = {} }: queryProps) => {
+export const useGetData = ({ key, url, params = {}, enabled = true }: queryProps) => {
 
   return useQuery({
     queryKey: [...key, params],
@@ -18,6 +19,7 @@ export const useGetData = ({ key, url, params = {} }: queryProps) => {
       const response = await baseAPI.get(url, { params });
       return response.data;
     },
+    enabled,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     staleTime: 5 * 60 * 1000,   // 5 min — data is fresh, no background refetch

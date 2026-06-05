@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Modal, Tabs, Descriptions, Tag, Image, Space, Avatar, Typography,
     Button, Spin, List, Table, Collapse, Empty, Row, Col, Alert, message,
-    Statistic, Form, Input, InputNumber, Select, DatePicker, Switch, Popconfirm, Rate,
+    Statistic, Form, Input, InputNumber, Select, DatePicker, Switch, Popconfirm, Rate, Radio,
 } from 'antd';
 import type { CollapseProps } from 'antd';
 import type { Dayjs } from 'dayjs';
@@ -193,6 +193,15 @@ const SuggestedCategories: React.FC<SuggestedCategoriesProps> = ({ trip, onTripU
 
 // ---------- SuggestedLocation ----------
 
+interface CityRecord {
+    _id: string;
+    name: string;
+    stateCode: string;
+    pincode?: string;
+    aliases?: string[];
+    location?: { coordinates?: [number, number] };
+}
+
 interface CityFormData {
     name: string;
     stateCode: string;
@@ -202,31 +211,46 @@ interface CityFormData {
     lng: number;
 }
 
-interface SuggestedLocationProps {
+interface TripLocationModalProps {
+    open: boolean;
     trip: Trip;
+    onClose: () => void;
     onTripUpdate?: (updated: Trip) => void;
+    initialMode?: 'link' | 'add';
+    prefillCityName?: string;
 }
 
-const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdate }) => {
+const TripLocationModal: React.FC<TripLocationModalProps> = ({
+    open, trip, onClose, onTripUpdate, initialMode = 'link', prefillCityName,
+}) => {
     const queryClient = useQueryClient();
-    const [modalOpen, setModalOpen] = useState(false);
-    const [added, setAdded] = useState(false);
-    const [form] = Form.useForm<CityFormData>();
-
-    const city = trip?.location?.city;
+    const [mode, setMode] = useState<'link' | 'add'>(initialMode);
+    const [selectedCityId, setSelectedCityId] = useState<string | undefined>(undefined);
+    const [citySearch, setCitySearch] = useState('');
+    const [addForm] = Form.useForm<CityFormData>();
 
     const { data: citiesData, isLoading: citiesLoading } = useQuery({
         queryKey: ['cities'],
         queryFn: async () => {
             const { data } = await baseAPI.get(api.getCities);
-            return (data as { data: { cities?: { name: string }[] } }).data;
+            return (data as { data: { cities?: CityRecord[] } }).data;
         },
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
     });
-    const cities: { name: string }[] = citiesData?.cities || [];
-    const knownCityNames = new Set(cities.map(c => c.name.toLowerCase()));
-    const isUnknown = city && !knownCityNames.has(city.toLowerCase());
+    const cities: CityRecord[] = citiesData?.cities || [];
+
+    useEffect(() => {
+        if (open) {
+            setMode(initialMode);
+            setSelectedCityId(undefined);
+            setCitySearch('');
+            addForm.resetFields();
+            if (prefillCityName) {
+                addForm.setFieldsValue({ name: prefillCityName });
+            }
+        }
+    }, [open, initialMode, prefillCityName, addForm]);
 
     const { mutate: updateTripLocation, isPending: locationUpdating } = useMutation({
         mutationFn: async ({ city: cityName, state, coordinates }: { city: string; state: string; coordinates: number[] }) => {
@@ -234,9 +258,11 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
             return data as { data: { location: Trip['location'] } };
         },
         onSuccess: (data) => {
+            message.success('Trip location updated!');
             onTripUpdate?.({ ...trip, location: data.data.location });
+            onClose();
         },
-        onError: () => message.error('City saved to DB but failed to update the trip location.'),
+        onError: () => message.error('Failed to update trip location.'),
     });
 
     const { mutate: addCity, isPending: cityAdding } = usePostData<unknown, {
@@ -247,7 +273,7 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
         location: { coordinates: [number, number] };
     }>(api.addCity, {
         onSuccess: (_, variables) => {
-            message.success(`City "${variables.name}" added to the database and trip updated!`);
+            message.success(`City "${variables.name}" added to database and trip updated!`);
             queryClient.invalidateQueries({ queryKey: ['cities'] });
             const stateName = INDIAN_STATES.find(s => s.code === variables.stateCode)?.name || variables.stateCode;
             updateTripLocation({
@@ -255,8 +281,6 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
                 state: stateName,
                 coordinates: variables.location.coordinates,
             });
-            setAdded(true);
-            setModalOpen(false);
         },
         onError: (err) => {
             const msg = (err.response?.data as { message?: string })?.message;
@@ -264,19 +288,255 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
         },
     });
 
-    const isPending = cityAdding || locationUpdating;
+    const handleLinkCity = () => {
+        const city = cities.find(c => c._id === selectedCityId);
+        if (!city) return;
+        const stateName = INDIAN_STATES.find(s => s.code === city.stateCode)?.name || city.stateCode;
+        updateTripLocation({
+            city: city.name,
+            state: stateName,
+            coordinates: city.location?.coordinates || [],
+        });
+    };
 
-    if (!city || citiesLoading || !isUnknown || added) return null;
-
-    const handleSubmit = (values: CityFormData) => {
+    const handleAddCity = (values: CityFormData) => {
         addCity({
             name: values.name,
             stateCode: values.stateCode,
             pincode: values.pincode || null,
-            aliases: values.aliases ? values.aliases.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+            aliases: values.aliases
+                ? values.aliases.split(',').map((s: string) => s.trim()).filter(Boolean)
+                : [],
             location: { coordinates: [values.lng, values.lat] },
         });
     };
+
+    const filteredCities = cities.filter(c => {
+        if (!citySearch) return true;
+        const q = citySearch.toLowerCase();
+        return (
+            c.name.toLowerCase().includes(q) ||
+            c.stateCode.toLowerCase().includes(q) ||
+            c.aliases?.some(a => a.toLowerCase().includes(q))
+        );
+    });
+
+    const cityOptions = filteredCities.map(c => ({
+        value: c._id,
+        label: `${c.name} (${c.stateCode})${c.aliases?.length ? ` — ${c.aliases.slice(0, 2).join(', ')}` : ''}`,
+    }));
+
+    const isPending = locationUpdating || cityAdding;
+
+    return (
+        <Modal
+            title="Edit Trip Location"
+            open={open}
+            onCancel={onClose}
+            footer={null}
+            destroyOnHidden
+            width={520}
+        >
+            <div style={{ marginTop: 16 }}>
+                <Radio.Group
+                    value={mode}
+                    onChange={e => setMode(e.target.value as 'link' | 'add')}
+                    style={{ marginBottom: 20 }}
+                    optionType="button"
+                    buttonStyle="solid"
+                >
+                    <Radio.Button value="link">Link existing city</Radio.Button>
+                    <Radio.Button value="add">Add new city</Radio.Button>
+                </Radio.Group>
+
+                {mode === 'link' && (
+                    <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                        <Select
+                            showSearch
+                            style={{ width: '100%' }}
+                            placeholder="Search by city name, state, or alias…"
+                            loading={citiesLoading}
+                            value={selectedCityId}
+                            onChange={setSelectedCityId}
+                            onSearch={setCitySearch}
+                            filterOption={false}
+                            options={cityOptions}
+                            notFoundContent={citiesLoading ? <Spin size="small" /> : 'No cities found'}
+                        />
+                        <Button
+                            type="primary"
+                            block
+                            disabled={!selectedCityId}
+                            loading={isPending}
+                            onClick={handleLinkCity}
+                        >
+                            Link to selected city
+                        </Button>
+                    </Space>
+                )}
+
+                {mode === 'add' && (
+                    <Form form={addForm} layout="vertical" onFinish={handleAddCity}>
+                        <Form.Item
+                            name="name"
+                            label="City Name"
+                            rules={[{ required: true, message: 'City name is required' }]}
+                        >
+                            <Input placeholder="e.g. Manali" />
+                        </Form.Item>
+                        <Form.Item
+                            name="stateCode"
+                            label="State"
+                            rules={[{ required: true, message: 'State is required' }]}
+                        >
+                            <Select
+                                showSearch
+                                placeholder="Select a state"
+                                optionFilterProp="label"
+                                options={INDIAN_STATES.map(s => ({ value: s.code, label: `${s.name} (${s.code})` }))}
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            name="pincode"
+                            label="Pincode (optional)"
+                            rules={[{ pattern: /^\d{6}$/, message: 'Enter a valid 6-digit pincode' }]}
+                        >
+                            <Input placeholder="e.g. 175131" maxLength={6} />
+                        </Form.Item>
+                        <Row gutter={12}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="lat"
+                                    label="Latitude"
+                                    rules={[{ required: true, message: 'Latitude is required' }]}
+                                >
+                                    <InputNumber placeholder="e.g. 32.2432" style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="lng"
+                                    label="Longitude"
+                                    rules={[{ required: true, message: 'Longitude is required' }]}
+                                >
+                                    <InputNumber placeholder="e.g. 77.1892" style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="aliases" label="Aliases (optional)" extra="Comma-separated alternate names">
+                            <Input placeholder="e.g. Manāli, Old Manali" />
+                        </Form.Item>
+                        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                            <Space>
+                                <Button onClick={onClose}>Cancel</Button>
+                                <Button type="primary" htmlType="submit" loading={isPending}>
+                                    Add City &amp; Link
+                                </Button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+                )}
+            </div>
+        </Modal>
+    );
+};
+
+interface SuggestedLocationProps {
+    trip: Trip;
+    onTripUpdate?: (updated: Trip) => void;
+}
+
+const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdate }) => {
+    const [linked, setLinked] = useState(false);
+    const [locationModalMode, setLocationModalMode] = useState<'link' | 'add' | null>(null);
+
+    const city = trip?.location?.city;
+
+    const { data: citiesData, isLoading: citiesLoading } = useQuery({
+        queryKey: ['cities'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getCities);
+            return (data as { data: { cities?: CityRecord[] } }).data;
+        },
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
+    });
+    const cities: CityRecord[] = citiesData?.cities || [];
+
+    const cityByName = new Map<string, CityRecord>();
+    const cityByAlias = new Map<string, CityRecord>();
+    cities.forEach(c => {
+        cityByName.set(c.name.toLowerCase(), c);
+        c.aliases?.forEach(a => cityByAlias.set(a.toLowerCase(), c));
+    });
+
+    const cityLower = city?.toLowerCase() || '';
+    const matchedCity = cityByName.get(cityLower) || cityByAlias.get(cityLower) || null;
+    const isViaAlias = !!matchedCity && !cityByName.has(cityLower);
+    const hasCoordinates = !!(trip.location?.coordinates?.length);
+
+    const { mutate: updateTripLocation, isPending: locationUpdating } = useMutation({
+        mutationFn: async ({ city: cityName, state, coordinates }: { city: string; state: string; coordinates: number[] }) => {
+            const { data } = await baseAPI.patch(api.updateTripLocation(trip._id), { city: cityName, state, coordinates });
+            return data as { data: { location: Trip['location'] } };
+        },
+        onSuccess: (data) => {
+            message.success('Trip location linked!');
+            onTripUpdate?.({ ...trip, location: data.data.location });
+            setLinked(true);
+        },
+        onError: () => message.error('Failed to update trip location.'),
+    });
+
+    const handleAutoLink = () => {
+        if (!matchedCity) return;
+        const stateName = INDIAN_STATES.find(s => s.code === matchedCity.stateCode)?.name || matchedCity.stateCode;
+        updateTripLocation({
+            city: matchedCity.name,
+            state: stateName,
+            coordinates: matchedCity.location?.coordinates || [],
+        });
+    };
+
+    if (!city || citiesLoading || linked) return null;
+
+    if (matchedCity) {
+        const needsSync = isViaAlias || !hasCoordinates;
+        if (!needsSync) return null;
+
+        return (
+            <Alert
+                type="info"
+                showIcon
+                style={{ marginTop: 4 }}
+                message={
+                    <Space style={{ width: '100%' }} direction="vertical" size={8}>
+                        <Text strong>City found in database</Text>
+                        {isViaAlias ? (
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                &quot;<b>{city}</b>&quot; is an alias for <b>{matchedCity.name}</b> ({matchedCity.stateCode}).
+                                Link to update canonical name and coordinates.
+                            </Text>
+                        ) : (
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                &quot;<b>{city}</b>&quot; matches <b>{matchedCity.name}</b> ({matchedCity.stateCode}) but has no coordinates.
+                                Link to sync them.
+                            </Text>
+                        )}
+                        <Button
+                            size="small"
+                            type="primary"
+                            icon={<MapPin size={14} />}
+                            loading={locationUpdating}
+                            onClick={handleAutoLink}
+                        >
+                            {isViaAlias ? `Link as "${matchedCity.name}"` : 'Sync coordinates'}
+                        </Button>
+                    </Space>
+                }
+            />
+        );
+    }
 
     return (
         <>
@@ -288,72 +548,40 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
                     <Space style={{ width: '100%' }} direction="vertical" size={8}>
                         <Text strong>Unrecognised City</Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                            &quot;<b>{city}</b>&quot; is not in the city database.
+                            &quot;<b>{city}</b>&quot; is not in the city database. Add it or link to an existing city.
                         </Text>
-                        <Button
-                            size="small"
-                            type="primary"
-                            icon={<MapPin size={14} />}
-                            onClick={() => {
-                                form.setFieldsValue({ name: city, stateCode: trip?.location?.state || undefined });
-                                setModalOpen(true);
-                            }}
-                        >
-                            Add to city database
-                        </Button>
+                        <Space>
+                            <Button
+                                size="small"
+                                type="primary"
+                                icon={<MapPin size={14} />}
+                                onClick={() => setLocationModalMode('add')}
+                            >
+                                Add to database
+                            </Button>
+                            <Button
+                                size="small"
+                                icon={<MapPin size={14} />}
+                                onClick={() => setLocationModalMode('link')}
+                            >
+                                Link existing city
+                            </Button>
+                        </Space>
                     </Space>
                 }
             />
-            <Modal
-                title={`Add "${city}" to City Database`}
-                open={modalOpen}
-                onCancel={() => setModalOpen(false)}
-                footer={null}
-                destroyOnHidden
-            >
-                <Form form={form} layout="vertical" onFinish={handleSubmit}>
-                    <Form.Item name="name" label="City Name" rules={[{ required: true, message: 'City name is required' }]}>
-                        <Input placeholder="e.g. Manali" />
-                    </Form.Item>
-                    <Form.Item name="stateCode" label="State" rules={[{ required: true, message: 'State is required' }]}>
-                        <Select
-                            showSearch
-                            disabled
-                            placeholder="Select a state"
-                            optionFilterProp="label"
-                            options={INDIAN_STATES.map(s => ({ value: s.code, label: `${s.name} (${s.code})` }))}
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="pincode"
-                        label="Pincode (optional)"
-                        rules={[{ pattern: /^\d{6}$/, message: 'Enter a valid 6-digit pincode' }]}
-                    >
-                        <Input placeholder="e.g. 175131" maxLength={6} />
-                    </Form.Item>
-                    <Row gutter={12}>
-                        <Col span={12}>
-                            <Form.Item name="lat" label="Latitude" rules={[{ required: true, message: 'Latitude is required' }]}>
-                                <InputNumber placeholder="e.g. 32.2432" style={{ width: '100%' }} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item name="lng" label="Longitude" rules={[{ required: true, message: 'Longitude is required' }]}>
-                                <InputNumber placeholder="e.g. 77.1892" style={{ width: '100%' }} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item name="aliases" label="Aliases (optional)" extra="Comma-separated alternate names">
-                        <Input placeholder="e.g. Manāli, Manalı" />
-                    </Form.Item>
-                    <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-                        <Space>
-                            <Button onClick={() => setModalOpen(false)}>Cancel</Button>
-                            <Button type="primary" htmlType="submit" loading={isPending}>Add City</Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
+            <TripLocationModal
+                open={locationModalMode !== null}
+                trip={trip}
+                onClose={() => setLocationModalMode(null)}
+                initialMode={locationModalMode ?? 'link'}
+                prefillCityName={city}
+                onTripUpdate={(updated) => {
+                    onTripUpdate?.(updated);
+                    setLinked(true);
+                    setLocationModalMode(null);
+                }}
+            />
         </>
     );
 };
@@ -365,7 +593,9 @@ interface OverviewTabProps {
     onTripUpdate?: (updated: Trip) => void;
 }
 
-const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => (
+const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => {
+    const [locationEditOpen, setLocationEditOpen] = useState(false);
+    return (
     <Space direction="vertical" style={{ width: '100%' }} size="large">
         {trip.tripImages?.length ? (
             <div>
@@ -407,13 +637,43 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => (
             )}
         </Descriptions>
 
-        <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small" title="Location">
+        <Descriptions
+            bordered
+            column={{ xs: 1, sm: 2 }}
+            size="small"
+            title={
+                <Space>
+                    Location
+                    <Button
+                        size="small"
+                        icon={<Pencil size={12} />}
+                        onClick={() => setLocationEditOpen(true)}
+                    >
+                        Edit
+                    </Button>
+                </Space>
+            }
+        >
             <Descriptions.Item label="City">{trip.location?.city || '—'}</Descriptions.Item>
             <Descriptions.Item label="State">{trip.location?.state || '—'}</Descriptions.Item>
             <Descriptions.Item label="Country">{trip.location?.country || '—'}</Descriptions.Item>
             <Descriptions.Item label="Address">{trip.location?.address || '—'}</Descriptions.Item>
+            {trip.location?.coordinates?.length ? (
+                <Descriptions.Item label="Coordinates">
+                    {trip.location.coordinates[1]?.toFixed(5)}, {trip.location.coordinates[0]?.toFixed(5)}
+                </Descriptions.Item>
+            ) : null}
         </Descriptions>
         <SuggestedLocation trip={trip} onTripUpdate={onTripUpdate} />
+        <TripLocationModal
+            open={locationEditOpen}
+            trip={trip}
+            onClose={() => setLocationEditOpen(false)}
+            onTripUpdate={(updated) => {
+                onTripUpdate?.(updated);
+                setLocationEditOpen(false);
+            }}
+        />
 
         <Descriptions bordered column={1} size="small" title="Host">
             <Descriptions.Item label="Host">
@@ -548,7 +808,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => (
             </div>
         )}
     </Space>
-);
+    );
+};
 
 // ---------- ItineraryTab ----------
 

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme:light;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time for Your Next Adventure</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<style>
+  :root { color-scheme: light !important; }
+  * { color-scheme: light !important; }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0f0;font-family:'Rubik',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f0f0;">
+  <tr>
+    <td align="center" style="padding:20px 0;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;box-shadow:0 10px 20px rgba(0,0,0,0.1);">
+
+        <!-- Banner -->
+        <tr>
+          <td style="padding:0;height:220px;background-color:#333333;background-image:url('{{bannerImageUrl}}');background-size:cover;background-position:center;">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="height:220px;">
+              <tr>
+                <td align="right" valign="bottom" style="padding:20px 28px;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);">
+                  <span style="font-family:'Rubik',sans-serif;font-size:38px;font-weight:900;color:#ffffff;letter-spacing:-1px;">wondrr</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Content -->
+        <tr>
+          <td style="padding:40px 48px 32px 48px;">
+            <p style="font-family:'Rubik',sans-serif;font-size:28px;font-weight:700;color:#1a1a1a;margin:0 0 28px 0;line-height:1.2;">Time for your next adventure!</p>
+            <p style="font-family:'Rubik',sans-serif;font-size:16px;color:#1a1a1a;margin:0 0 14px 0;">Hi {{userName}},</p>
+            <p style="font-family:'Rubik',sans-serif;font-size:16px;color:#1a1a1a;line-height:1.65;margin:0 0 14px 0;">We have missed you! It has been a while since your last trip and we think it is the perfect time to plan your next adventure.</p>
+            <p style="font-family:'Rubik',sans-serif;font-size:16px;color:#1a1a1a;line-height:1.65;margin:0 0 28px 0;">We have handpicked some amazing trips just for you, with exclusive deals you don't want to miss.</p>
+
+            <!-- Limited Time Offer Badge -->
+            <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 28px auto;">
+              <tr>
+                <td style="background:#fef2ff;border:1.5px solid #eea0ff;border-radius:99px;padding:10px 20px;">
+                  <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="22" style="padding-right:8px;vertical-align:middle;">
+                        <img src="{{ICON_BASE_URL}}/clock.png" width="18" height="18" alt="!">
+                      </td>
+                      <td style="font-family:'Rubik',sans-serif;font-size:15px;font-weight:600;color:#1a1a1a;">Limited Time Offer</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Popular Trips -->
+            <p style="font-family:'Rubik',sans-serif;font-size:17px;font-weight:600;color:#1a1a1a;margin:0 0 16px 0;">Trips Curated for You</p>
+
+            <!-- Trip Card 1 -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #d9d9d9;border-radius:14px;margin-bottom:16px;overflow:hidden;">
+              <tr>
+                <td style="padding:0;vertical-align:top;">
+                  <img src="{{trip1ImageUrl}}" width="504" height="160" alt="{{trip1Name}}" style="display:block;width:100%;height:160px;object-fit:cover;">
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td>
+                        <p style="font-family:'Rubik',sans-serif;font-size:16px;font-weight:600;color:#1a1a1a;margin:0 0 4px 0;">{{trip1Name}}</p>
+                        <p style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;margin:0 0 10px 0;">{{trip1Duration}} &bull; {{trip1GroupSize}}</p>
+                      </td>
+                      <td align="right" valign="top">
+                        <span style="display:inline-block;background:#dcfce7;border:1px solid #86efac;color:#16a34a;font-family:'Rubik',sans-serif;font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;">Save {{trip1Discount}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span style="font-family:'Rubik',sans-serif;font-size:20px;font-weight:700;color:#1a1a1a;">&#8377;{{trip1Price}}</span>
+                        <span style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;"> / person</span>
+                      </td>
+                      <td align="right">
+                        <a href="{{trip1Url}}" style="display:inline-block;background:#eea0ff;color:#1a1a1a;font-family:'Rubik',sans-serif;font-size:14px;font-weight:500;text-decoration:none;padding:8px 18px;border-radius:8px;">View Trip</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Trip Card 2 -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #d9d9d9;border-radius:14px;margin-bottom:16px;overflow:hidden;">
+              <tr>
+                <td style="padding:0;vertical-align:top;">
+                  <img src="{{trip2ImageUrl}}" width="504" height="160" alt="{{trip2Name}}" style="display:block;width:100%;height:160px;object-fit:cover;">
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td>
+                        <p style="font-family:'Rubik',sans-serif;font-size:16px;font-weight:600;color:#1a1a1a;margin:0 0 4px 0;">{{trip2Name}}</p>
+                        <p style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;margin:0 0 10px 0;">{{trip2Duration}} &bull; {{trip2GroupSize}}</p>
+                      </td>
+                      <td align="right" valign="top">
+                        <span style="display:inline-block;background:#dcfce7;border:1px solid #86efac;color:#16a34a;font-family:'Rubik',sans-serif;font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;">Save {{trip2Discount}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span style="font-family:'Rubik',sans-serif;font-size:20px;font-weight:700;color:#1a1a1a;">&#8377;{{trip2Price}}</span>
+                        <span style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;"> / person</span>
+                      </td>
+                      <td align="right">
+                        <a href="{{trip2Url}}" style="display:inline-block;background:#eea0ff;color:#1a1a1a;font-family:'Rubik',sans-serif;font-size:14px;font-weight:500;text-decoration:none;padding:8px 18px;border-radius:8px;">View Trip</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Trip Card 3 -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #d9d9d9;border-radius:14px;margin-bottom:28px;overflow:hidden;">
+              <tr>
+                <td style="padding:0;vertical-align:top;">
+                  <img src="{{trip3ImageUrl}}" width="504" height="160" alt="{{trip3Name}}" style="display:block;width:100%;height:160px;object-fit:cover;">
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td>
+                        <p style="font-family:'Rubik',sans-serif;font-size:16px;font-weight:600;color:#1a1a1a;margin:0 0 4px 0;">{{trip3Name}}</p>
+                        <p style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;margin:0 0 10px 0;">{{trip3Duration}} &bull; {{trip3GroupSize}}</p>
+                      </td>
+                      <td align="right" valign="top">
+                        <span style="display:inline-block;background:#dcfce7;border:1px solid #86efac;color:#16a34a;font-family:'Rubik',sans-serif;font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;">Save {{trip3Discount}}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span style="font-family:'Rubik',sans-serif;font-size:20px;font-weight:700;color:#1a1a1a;">&#8377;{{trip3Price}}</span>
+                        <span style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;"> / person</span>
+                      </td>
+                      <td align="right">
+                        <a href="{{trip3Url}}" style="display:inline-block;background:#eea0ff;color:#1a1a1a;font-family:'Rubik',sans-serif;font-size:14px;font-weight:500;text-decoration:none;padding:8px 18px;border-radius:8px;">View Trip</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Why Book Now -->
+            <p style="font-family:'Rubik',sans-serif;font-size:17px;font-weight:600;color:#1a1a1a;margin:0 0 16px 0;">Why Book Now?</p>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+              <tr>
+                <td width="28" valign="top" style="padding-top:2px;padding-bottom:10px;">
+                  <img src="{{ICON_BASE_URL}}/check-fat.png" width="18" height="18" alt="✓">
+                </td>
+                <td style="font-family:'Rubik',sans-serif;font-size:15px;color:#1a1a1a;padding-left:8px;padding-bottom:10px;">Special discounts exclusively for returning travelers</td>
+              </tr>
+              <tr>
+                <td width="28" valign="top" style="padding-top:2px;padding-bottom:10px;">
+                  <img src="{{ICON_BASE_URL}}/check-fat.png" width="18" height="18" alt="✓">
+                </td>
+                <td style="font-family:'Rubik',sans-serif;font-size:15px;color:#1a1a1a;padding-left:8px;padding-bottom:10px;">Earn Wondrr Cash on every booking</td>
+              </tr>
+              <tr>
+                <td width="28" valign="top" style="padding-top:2px;">
+                  <img src="{{ICON_BASE_URL}}/check-fat.png" width="18" height="18" alt="✓">
+                </td>
+                <td style="font-family:'Rubik',sans-serif;font-size:15px;color:#1a1a1a;padding-left:8px;">Limited spots — popular dates fill up fast!</td>
+              </tr>
+            </table>
+
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center">
+                  <a href="{{exploreAllTripsUrl}}" style="display:inline-block;background:#eea0ff;color:#1a1a1a;font-family:'Rubik',sans-serif;font-size:18px;font-weight:600;text-decoration:none;padding:16px 48px;border-radius:14px;">Explore All Trips</a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Help -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #d9d9d9;">
+              <tr>
+                <td align="center" style="padding-top:24px;">
+                  <p style="font-family:'Rubik',sans-serif;font-size:14px;color:#4a5565;margin:0 0 6px 0;">Need help finding the right trip?</p>
+                  <a href="{{travelExpertsUrl}}" style="font-family:'Rubik',sans-serif;font-size:14px;color:#5c87ff;text-decoration:underline;">Talk to Our Travel Experts</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background-color:#7fa1ff;padding:40px 48px 32px 48px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center">
+                  <p style="font-family:'Rubik',sans-serif;font-size:22px;font-weight:900;color:#1a1a1a;margin:0 0 4px 0;">wondrr</p>
+                  <p style="font-family:'Rubik',sans-serif;font-size:14px;color:#1a1a1a;margin:0 0 24px 0;">Find your next adventure in minutes</p>
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 20px auto;">
+                    <tr>
+                      <td style="padding:0 10px;"><a href="{{facebookUrl}}"><img src="{{ICON_BASE_URL}}/facebook.png" width="22" height="22" alt="Facebook"></a></td>
+                      <td style="padding:0 10px;"><a href="{{twitterUrl}}"><img src="{{ICON_BASE_URL}}/twitter.png" width="22" height="22" alt="Twitter"></a></td>
+                      <td style="padding:0 10px;"><a href="{{instagramUrl}}"><img src="{{ICON_BASE_URL}}/instagram.png" width="22" height="22" alt="Instagram"></a></td>
+                      <td style="padding:0 10px;"><a href="{{linkedinUrl}}"><img src="{{ICON_BASE_URL}}/linkedin.png" width="22" height="22" alt="LinkedIn"></a></td>
+                    </tr>
+                  </table>
+                  <p style="font-family:'Rubik',sans-serif;font-size:13px;color:#1a1a1a;margin:0 0 10px 0;">
+                    <a href="{{privacyUrl}}" style="color:#1a1a1a;text-decoration:none;">Privacy Policy</a>
+                    &nbsp;&bull;&nbsp;
+                    <a href="{{termsUrl}}" style="color:#1a1a1a;text-decoration:none;">Terms of Service</a>
+                    &nbsp;&bull;&nbsp;
+                    <a href="{{helpCenterUrl}}" style="color:#1a1a1a;text-decoration:none;">Help Center</a>
+                  </p>
+                  <p style="font-family:'Rubik',sans-serif;font-size:13px;color:#1a1a1a;margin:0 0 8px 0;">© 2026 Wondrr Inc. All rights reserved.</p>
+                  <p style="font-family:'Rubik',sans-serif;font-size:12px;color:#1a1a1a;margin:0;"><a href="{{unsubscribeUrl}}" style="color:#1a1a1a;text-decoration:underline;">Unsubscribe from promotional emails</a></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

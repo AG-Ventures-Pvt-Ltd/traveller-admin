@@ -17,6 +17,7 @@ export const PERMISSIONS = {
   CONFIGS: 'configs',
   COUPONS: 'coupons',
   EMAILS: 'emails',
+  LOCATION_ANALYTICS: 'locationanalytics',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

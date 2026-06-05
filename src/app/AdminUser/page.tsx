@@ -22,7 +22,7 @@ const { Title, Text } = Typography;
 const ALL_PERMISSIONS = [
   'dashboard', 'users', 'hosts', 'bookings', 'trips', 'stories',
   'payments', 'usersupport', 'settings', 'adminusers',
-  'errorlogs', 'apilogs', 'apianalytics', 'serverhealth', 'configs', 'coupons', 'emails',
+  'errorlogs', 'apilogs', 'apianalytics', 'serverhealth', 'configs', 'coupons', 'emails', 'locationanalytics',
 ]
 
 const AdminUser = () => {

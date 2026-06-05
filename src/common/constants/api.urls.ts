@@ -99,4 +99,7 @@ export const api = {
 
     // Emails
     sendEngagementEmail: '/api/admin/v1/emails/send-engagement',
+
+    // Location Analytics
+    getLocationAnalytics: '/api/admin/v1/location-analytics',
 } as const;

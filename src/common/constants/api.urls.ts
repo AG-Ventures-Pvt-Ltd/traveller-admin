@@ -93,6 +93,12 @@ export const api = {
     getSignupBonus: '/api/admin/v1/config/signup-bonus',
     updateSignupBonus: '/api/admin/v1/config/signup-bonus',
 
+    // Traveler Stats
+    getTravelerStats: '/api/admin/v1/config/traveler-stats',
+    updateGlobalTravelerStats: '/api/admin/v1/config/traveler-stats/global',
+    updateTripTravelerStats: (slug: string) => `/api/admin/v1/config/traveler-stats/trip/${slug}`,
+    deleteTripTravelerStats: (slug: string) => `/api/admin/v1/config/traveler-stats/trip/${slug}`,
+
     // Wallet
     addWalletCash: (userId: string) => `/api/admin/v1/users/${userId}/wallet/add-cash`,
     getUserCancelledBookings: (userId: string) => `/api/admin/v1/users/${userId}/bookings/cancelled`,

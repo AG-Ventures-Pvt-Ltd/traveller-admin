@@ -24,7 +24,7 @@ import {
     Switch,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
@@ -53,7 +53,18 @@ interface FeaturedCategory {
 interface PublishedTrip {
     _id: string;
     title: string;
+    slug?: string;
     location?: { city?: string };
+}
+
+interface TravelerStat {
+    _id: string;
+    count: number;
+}
+
+interface TravelerStatsData {
+    global: TravelerStat;
+    trips: TravelerStat[];
 }
 
 // ── Indian States ─────────────────────────────────────────────────────────────
@@ -1456,6 +1467,274 @@ const SignupBonusTab: React.FC = () => {
     );
 };
 
+// ── Traveler Stats Tab ────────────────────────────────────────────────────────
+
+const TravelerStatsTab: React.FC = () => {
+    const [globalEditVisible, setGlobalEditVisible] = useState(false);
+    const [addTripVisible, setAddTripVisible] = useState(false);
+    const [editingTrip, setEditingTrip] = useState<TravelerStat | null>(null);
+    const [tripSearch, setTripSearch] = useState('');
+    const [globalForm] = Form.useForm();
+    const [tripForm] = Form.useForm();
+    const queryClient = useQueryClient();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['traveler-stats'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getTravelerStats);
+            return data.data as TravelerStatsData;
+        },
+        refetchOnWindowFocus: false,
+    });
+
+    const { data: publishedTrips = [] } = usePublishedTripsDropdown(tripSearch);
+
+    const { mutate: updateGlobal, isPending: updatingGlobal } = useMutation({
+        mutationFn: async (values: { count: number }) => {
+            const { data } = await baseAPI.put(api.updateGlobalTravelerStats, values);
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Global traveler count updated!');
+            queryClient.invalidateQueries({ queryKey: ['traveler-stats'] });
+            setGlobalEditVisible(false);
+            globalForm.resetFields();
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to update'),
+    });
+
+    const { mutate: upsertTripStat, isPending: upsertingTrip } = useMutation({
+        mutationFn: async ({ slug, count }: { slug: string; count: number }) => {
+            const { data } = await baseAPI.put(api.updateTripTravelerStats(slug), { count });
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Trip traveler count saved!');
+            queryClient.invalidateQueries({ queryKey: ['traveler-stats'] });
+            setAddTripVisible(false);
+            setEditingTrip(null);
+            tripForm.resetFields();
+            setTripSearch('');
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to save'),
+    });
+
+    const { mutate: deleteTripStat } = useMutation({
+        mutationFn: async (slug: string) => {
+            await baseAPI.delete(api.deleteTripTravelerStats(slug));
+        },
+        onSuccess: () => {
+            message.success('Trip stat deleted');
+            queryClient.invalidateQueries({ queryKey: ['traveler-stats'] });
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to delete'),
+    });
+
+    React.useEffect(() => {
+        if (globalEditVisible && data?.global) {
+            globalForm.setFieldsValue({ count: data.global.count });
+        }
+    }, [globalEditVisible, data, globalForm]);
+
+    React.useEffect(() => {
+        if (editingTrip) {
+            tripForm.setFieldsValue({ count: editingTrip.count });
+        }
+    }, [editingTrip, tripForm]);
+
+    const tripColumns: TableColumnsType<TravelerStat> = [
+        {
+            title: 'Trip Slug',
+            dataIndex: '_id',
+            key: 'slug',
+            render: (slug: string) => <Tag>{slug}</Tag>,
+        },
+        {
+            title: 'Count',
+            dataIndex: 'count',
+            key: 'count',
+            render: (count: number) => (
+                <Text style={{ color: '#1890ff', fontWeight: 600 }}>{count}+</Text>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            width: 120,
+            render: (_: unknown, record: TravelerStat) => (
+                <Space>
+                    <Tooltip title="Edit">
+                        <Button
+                            icon={<Pencil size={14} />}
+                            size="small"
+                            type="text"
+                            style={{ color: '#8c8c8c' }}
+                            onClick={() => setEditingTrip(record)}
+                        />
+                    </Tooltip>
+                    <Popconfirm
+                        title="Delete this entry?"
+                        onConfirm={() => deleteTripStat(record._id)}
+                        okText="Delete"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Tooltip title="Delete">
+                            <Button icon={<Trash2 size={14} />} size="small" type="text" danger />
+                        </Tooltip>
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
+
+    const closeTripModal = () => {
+        setAddTripVisible(false);
+        setEditingTrip(null);
+        tripForm.resetFields();
+        setTripSearch('');
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            {/* Global Count */}
+            <div>
+                <Text strong style={{ color: '#fff', fontSize: 16, display: 'block', marginBottom: 16 }}>
+                    Global Traveler Count
+                </Text>
+                <Spin spinning={isLoading}>
+                    <Card
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                    Shown on Homepage
+                                </Text>
+                                <div style={{ marginTop: 8, fontSize: 28, fontWeight: 600, color: '#1890ff' }}>
+                                    {data?.global?.count ?? 156}+
+                                </div>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    Travellers booked with us last month
+                                </Text>
+                            </div>
+                            <Button type="primary" onClick={() => setGlobalEditVisible(true)}>
+                                Edit Count
+                            </Button>
+                        </div>
+                    </Card>
+                </Spin>
+            </div>
+
+            {/* Per-Trip Counts */}
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <Text strong style={{ color: '#fff', fontSize: 16 }}>
+                        Per-Trip Traveler Counts
+                    </Text>
+                    <Button
+                        type="primary"
+                        icon={<Plus size={14} />}
+                        onClick={() => { tripForm.resetFields(); setAddTripVisible(true); }}
+                    >
+                        Add Trip Count
+                    </Button>
+                </div>
+                <Spin spinning={isLoading}>
+                    <Table
+                        dataSource={data?.trips || []}
+                        columns={tripColumns}
+                        rowKey="_id"
+                        pagination={false}
+                        size="small"
+                        locale={{ emptyText: <Empty description="No per-trip counts set" /> }}
+                    />
+                </Spin>
+            </div>
+
+            {/* Global Edit Modal */}
+            <Modal
+                title="Edit Global Traveler Count"
+                open={globalEditVisible}
+                onCancel={() => { setGlobalEditVisible(false); globalForm.resetFields(); }}
+                onOk={() => globalForm.submit()}
+                confirmLoading={updatingGlobal}
+                okText="Update"
+                width={400}
+            >
+                <Form
+                    form={globalForm}
+                    layout="vertical"
+                    onFinish={(values) => updateGlobal({ count: values.count })}
+                    style={{ marginTop: 16 }}
+                >
+                    <Form.Item
+                        name="count"
+                        label="Traveler Count"
+                        rules={[{ required: true, message: 'Please enter a count' }]}
+                    >
+                        <InputNumber min={0} style={{ width: '100%' }} placeholder="e.g. 156" />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* Add / Edit Trip Modal */}
+            <Modal
+                title={editingTrip ? 'Edit Trip Traveler Count' : 'Add Trip Traveler Count'}
+                open={addTripVisible || !!editingTrip}
+                onCancel={closeTripModal}
+                onOk={() => tripForm.submit()}
+                confirmLoading={upsertingTrip}
+                okText={editingTrip ? 'Update' : 'Add'}
+                width={440}
+            >
+                <Form
+                    form={tripForm}
+                    layout="vertical"
+                    onFinish={(values) => {
+                        const slug = editingTrip ? editingTrip._id : values.tripSlug;
+                        upsertTripStat({ slug, count: values.count });
+                    }}
+                    style={{ marginTop: 16 }}
+                >
+                    {editingTrip ? (
+                        <Form.Item label="Trip">
+                            <Tag>{editingTrip._id}</Tag>
+                        </Form.Item>
+                    ) : (
+                        <Form.Item
+                            name="tripSlug"
+                            label="Trip"
+                            rules={[{ required: true, message: 'Please select a trip' }]}
+                        >
+                            <Select
+                                showSearch
+                                placeholder="Search and select a trip"
+                                filterOption={false}
+                                onSearch={setTripSearch}
+                                options={publishedTrips.map((t) => ({
+                                    value: t.slug,
+                                    label: `${t.title}${t.location?.city ? ` (${t.location.city})` : ''}`,
+                                }))}
+                                style={{ width: '100%' }}
+                            />
+                        </Form.Item>
+                    )}
+                    <Form.Item
+                        name="count"
+                        label="Traveler Count"
+                        rules={[{ required: true, message: 'Please enter a count' }]}
+                    >
+                        <InputNumber min={0} style={{ width: '100%' }} placeholder="e.g. 50" />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
+};
+
 // ── Main Configs Page ─────────────────────────────────────────────────────────
 
 export default function ConfigsPage() {
@@ -1509,6 +1788,16 @@ export default function ConfigsPage() {
                 </Space>
             ),
             children: <SignupBonusTab />,
+        },
+        {
+            key: 'travelerstats',
+            label: (
+                <Space>
+                    <Users size={16} />
+                    Traveler Stats
+                </Space>
+            ),
+            children: <TravelerStatsTab />,
         },
     ];
 

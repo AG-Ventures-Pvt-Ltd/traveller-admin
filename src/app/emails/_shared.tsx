@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Mail } from 'lucide-react';
 import { api } from '@/common/constants/api.urls';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -23,11 +23,18 @@ export interface TripSummary {
     discount?: string;
 }
 
+export interface TemplateFieldVariable {
+    key: string;
+    description: string;
+}
+
 export interface TemplateField {
     name: string;
     label: string;
     group: string;
     placeholder?: string;
+    type?: 'text' | 'url' | 'textarea';
+    variables?: TemplateFieldVariable[];
 }
 
 export interface EmailTemplate {
@@ -46,6 +53,20 @@ export interface EmailTemplate {
 
 const USER_ENGAGEMENT_GENERAL_FIELDS: TemplateField[] = [];
 
+const MARKETING_EMAIL_FIELDS: TemplateField[] = [
+    {
+        name: 'INNER_CONTENT',
+        label: 'Email Content (HTML)',
+        group: 'Content',
+        type: 'textarea',
+        placeholder: '<p style="font-size:16px;color:#1a1a1a;">Hello {{userName}},</p>\n<p>Your message here...</p>',
+        variables: [
+            { key: '{{userName}}', description: "Recipient's name" },
+            { key: '{{userEmail}}', description: "Recipient's email address" },
+        ],
+    },
+];
+
 export const EMAIL_TEMPLATES: EmailTemplate[] = [
     {
         id: 'user_engagement_with_trips',
@@ -57,6 +78,17 @@ export const EMAIL_TEMPLATES: EmailTemplate[] = [
         fields: USER_ENGAGEMENT_GENERAL_FIELDS,
         groups: ['General'],
         htmlFile: 're-engagement.html',
+    },
+    {
+        id: 'marketing_email',
+        name: 'Marketing Email',
+        description: 'Send a fully custom HTML marketing email to travellers. Write your own content and override footer URLs.',
+        icon: <Mail size={20} />,
+        apiUrl: api.sendMarketingEmail,
+        tripBased: false,
+        fields: MARKETING_EMAIL_FIELDS,
+        groups: ['Content'],
+        htmlFile: 'marketing-email.html',
     },
 ];
 
@@ -81,8 +113,10 @@ export const PREVIEW_DEFAULTS: Record<string, string> = {
     exploreAllTripsUrl: 'https://wondrr.in/trips',
     travelExpertsUrl: 'https://wondrr.in/trips',
     unsubscribeUrl: 'https://wondrr.in/unsubscribe',
+    supportUrl: '#',
     helpCenterUrl: '#',
     termsUrl: '#',
+    INNER_CONTENT: '<p style="font-family:Rubik,sans-serif;font-size:16px;color:#1a1a1a;line-height:1.7;margin:0 0 16px;">Hi <strong>{{userName}}</strong>,</p><p style="font-family:Rubik,sans-serif;font-size:15px;color:#4a5565;line-height:1.7;margin:0;">Your email preview will appear here once you start typing content above.</p>',
 };
 
 export function substituteTemplate(html: string, values: Record<string, string>): string {

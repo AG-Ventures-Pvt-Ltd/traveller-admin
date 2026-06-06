@@ -6,7 +6,8 @@ import {
     Tag, message, Radio, AutoComplete, Spin, Tooltip, Skeleton,
 } from 'antd';
 import type { InputRef } from 'antd';
-import { ArrowLeft, Send, Users, User, MapPin, X, Plus, ImageOff, Clock, UsersRound, Ticket } from 'lucide-react';
+import type { TextAreaRef } from 'antd/es/input/TextArea';
+import { ArrowLeft, Send, Users, User, MapPin, X, Plus, ImageOff, Clock, UsersRound, Ticket, Copy } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import { useGetData } from '@/services/useGetData';
 import { usePostData } from '@/services/usePostData';
@@ -19,7 +20,7 @@ const cfUrl = (path: string | null | undefined) =>
 
 import {
     EMAIL_TEMPLATES, PREVIEW_DEFAULTS, substituteTemplate,
-    cardStyle, type TripSummary, type UserOption,
+    cardStyle, type TripSummary, type UserOption, type TemplateFieldVariable,
 } from '../../_shared';
 
 const { Title, Text } = Typography;
@@ -108,6 +109,7 @@ export default function ComposePage() {
     const [rawHtml, setRawHtml] = useState<string | null>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const slugInputRef = useRef<InputRef>(null);
+    const textAreaRefs = useRef<Record<string, TextAreaRef | null>>({});
 
     // Load template HTML
     useEffect(() => {
@@ -231,6 +233,8 @@ export default function ComposePage() {
     const handleSubmit = (values: Record<string, string>) => {
         if (!template) return;
         if (template.tripBased && addedTrips.length === 0) { messageApi.warning('Please add at least one trip.'); return; }
+        const hasInnerContent = template.fields.find(f => f.name === 'INNER_CONTENT');
+        if (hasInnerContent && !values.INNER_CONTENT?.trim()) { messageApi.warning('Email Content (HTML) is required.'); return; }
         if (recipientMode === 'selected' && selectedUsers.length === 0) {
             messageApi.warning('Please add at least one recipient or switch to "All Travellers".');
             return;
@@ -367,24 +371,90 @@ export default function ComposePage() {
                                 </Card>
                             )}
 
-                            {/* General fields */}
-                            {template.fields.length > 0 && (
-                                <Card style={{ ...cardStyle, marginBottom: 16 }}>
-                                    <Title level={5} style={{ color: '#fff', marginBottom: 16 }}>General</Title>
-                                    {template.fields.map(field => (
-                                        <Form.Item
-                                            key={field.name}
-                                            name={field.name}
-                                            label={<span style={{ color: '#8c8c8c', fontSize: 13 }}>{field.label}</span>}
-                                        >
-                                            <Input
-                                                placeholder={field.placeholder ?? field.label}
-                                                style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.15)', color: '#fff' }}
-                                            />
-                                        </Form.Item>
-                                    ))}
-                                </Card>
-                            )}
+                            {/* Fields grouped by group name */}
+                            {template.groups.map(group => {
+                                const groupFields = template.fields.filter(f => f.group === group);
+                                if (groupFields.length === 0) return null;
+                                return (
+                                    <Card key={group} style={{ ...cardStyle, marginBottom: 16 }}>
+                                        <Title level={5} style={{ color: '#fff', marginBottom: 16 }}>{group}</Title>
+                                        {groupFields.map(field => (
+                                            <Form.Item
+                                                key={field.name}
+                                                name={field.name}
+                                                label={<span style={{ color: '#8c8c8c', fontSize: 13 }}>{field.label}</span>}
+                                            >
+                                                {field.type === 'textarea' ? (
+                                                    <div>
+                                                        {field.variables && field.variables.length > 0 && (
+                                                            <div style={{ marginBottom: 8 }}>
+                                                                <Text style={{ color: '#555', fontSize: 11, display: 'block', marginBottom: 6 }}>
+                                                                    Click to insert variable at cursor:
+                                                                </Text>
+                                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                                                    {field.variables.map((v: TemplateFieldVariable) => (
+                                                                        <Tooltip key={v.key} title={v.description}>
+                                                                            <Tag
+                                                                                icon={<Copy size={10} style={{ marginRight: 4 }} />}
+                                                                                style={{
+                                                                                    cursor: 'pointer',
+                                                                                    background: 'rgba(24,144,255,0.12)',
+                                                                                    borderColor: 'rgba(24,144,255,0.4)',
+                                                                                    color: '#69b1ff',
+                                                                                    fontFamily: 'monospace',
+                                                                                    fontSize: 12,
+                                                                                    userSelect: 'none',
+                                                                                }}
+                                                                                onClick={() => {
+                                                                                    const ta = textAreaRefs.current[field.name]?.resizableTextArea?.textArea;
+                                                                                    if (ta) {
+                                                                                        const start = ta.selectionStart ?? ta.value.length;
+                                                                                        const end = ta.selectionEnd ?? start;
+                                                                                        const current = form.getFieldValue(field.name) ?? '';
+                                                                                        const next = current.slice(0, start) + v.key + current.slice(end);
+                                                                                        form.setFieldValue(field.name, next);
+                                                                                        setTimeout(() => {
+                                                                                            ta.focus();
+                                                                                            ta.setSelectionRange(start + v.key.length, start + v.key.length);
+                                                                                        }, 0);
+                                                                                    } else {
+                                                                                        const current = form.getFieldValue(field.name) ?? '';
+                                                                                        form.setFieldValue(field.name, current + v.key);
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                {v.key}
+                                                                            </Tag>
+                                                                        </Tooltip>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        <Input.TextArea
+                                                            ref={(el) => { textAreaRefs.current[field.name] = el; }}
+                                                            rows={10}
+                                                            placeholder={field.placeholder ?? field.label}
+                                                            style={{
+                                                                background: 'rgba(255,255,255,0.07)',
+                                                                borderColor: 'rgba(255,255,255,0.15)',
+                                                                color: '#fff',
+                                                                fontFamily: 'monospace',
+                                                                fontSize: 12,
+                                                                resize: 'vertical',
+                                                            }}
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <Input
+                                                        placeholder={field.placeholder ?? field.label}
+                                                        style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.15)', color: '#fff' }}
+                                                    />
+                                                )}
+                                            </Form.Item>
+                                        ))}
+                                    </Card>
+                                );
+                            })}
 
                             {/* Recipients */}
                             <Card style={cardStyle}>

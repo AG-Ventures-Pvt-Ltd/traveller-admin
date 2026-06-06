@@ -105,6 +105,7 @@ export const api = {
 
     // Emails
     sendEngagementEmail: '/api/admin/v1/emails/send-engagement',
+    sendMarketingEmail: '/api/admin/v1/emails/send-marketing',
 
     // Location Analytics
     getLocationAnalytics: '/api/admin/v1/location-analytics',

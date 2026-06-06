@@ -130,12 +130,12 @@ const CARD_CONFIGS = [
   },
   {
     key: 'totalActiveEndpoints',
-    label: 'Total Active Endpoints',
+    label: 'Active Endpoints',
     icon: Server,
     color: '#13c2c2',
     bg: 'rgba(19, 194, 194, 0.1)',
     border: 'rgba(19, 194, 194, 0.25)',
-    tooltip: 'Unique route+method combinations with traffic on this date',
+    tooltip: 'Unique route+method combinations with traffic on this date (1 when endpoint selected)',
     format: (v: number) => v.toLocaleString(),
   },
 ] as const;
@@ -507,14 +507,40 @@ export default function ApiAnalyticsDashboard() {
   );
 
   const endpointOptions = useMemo(
-    () => endpoints.map(r => ({ label: `${r.method} ${r.route}`, value: `${r.method} ${r.route}` })),
+    () => endpoints
+      .filter(r => r.method !== 'OPTIONS')
+      .map(r => ({ label: `${r.method} ${r.route}`, value: `${r.method} ${r.route}` })),
     [endpoints]
   );
 
   const filteredEndpoints = useMemo(
-    () => selectedEndpoint ? endpoints.filter(r => `${r.method} ${r.route}` === selectedEndpoint) : endpoints,
+    () => selectedEndpoint
+      ? endpoints.filter(r => r.method !== 'OPTIONS' && `${r.method} ${r.route}` === selectedEndpoint)
+      : endpoints.filter(r => r.method !== 'OPTIONS'),
     [endpoints, selectedEndpoint]
   );
+
+  // When a specific endpoint is selected, derive summary stats from that record
+  // instead of showing day-level aggregates.
+  const endpointSummary = useMemo<Summary | undefined>(() => {
+    if (!selectedEndpoint || filteredEndpoints.length === 0) return undefined;
+    const r = filteredEndpoints[0];
+    const errorRate = r.requestCount > 0
+      ? parseFloat(((r.errorCount / r.requestCount) * 100).toFixed(2))
+      : 0;
+    const peakHour = r.hourlyRequests?.length
+      ? r.hourlyRequests.reduce((best, h) => h.count > best.count ? h : best).hour
+      : null;
+    return {
+      date: dateStr,
+      totalRequests: r.requestCount,
+      avgLatencyMs: r.avgLatencyMs,
+      errorRate,
+      slowestEndpoint: { route: r.route, method: r.method, maxLatencyMs: r.maxLatencyMs },
+      peakTrafficHour: peakHour,
+      totalActiveEndpoints: 1,
+    };
+  }, [selectedEndpoint, filteredEndpoints, dateStr]);
 
   // Parse selected endpoint into method + route for the trend API
   const parsedEndpoint = useMemo(() => {
@@ -570,8 +596,11 @@ export default function ApiAnalyticsDashboard() {
           </div>
         </div>
 
-        {/* Summary Cards — always day-level aggregates */}
-        <SummaryCards summary={summary} loading={summaryLoading} />
+        {/* Summary Cards — endpoint-level when one is selected, otherwise day-level */}
+        <SummaryCards
+          summary={endpointSummary ?? summary}
+          loading={endpointSummary ? false : summaryLoading}
+        />
 
         <Divider style={{ borderColor: 'rgba(255,255,255,0.08)', margin: '28px 0 20px' }} />
 

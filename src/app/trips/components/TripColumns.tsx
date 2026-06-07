@@ -34,13 +34,22 @@ export const columns = ({ handlePublish }: ColumnOptions): TableProps<Trip>['col
         title: 'Location',
         dataIndex: 'location',
         key: 'location',
-        width: 160,
-        render: (location: Trip['location']) => (
-            <Space>
-                <MapPin size={14} />
-                <span>{[location?.city, location?.country].filter(Boolean).join(', ') || '—'}</span>
-            </Space>
-        ),
+        width: 190,
+        render: (location: Trip['location']) => {
+            const coords = location?.coordinates;
+            const isLinked = !!(coords?.length && !(coords[0] === 0 && coords[1] === 0));
+            return (
+                <Space direction="vertical" size={2}>
+                    <Space>
+                        <MapPin size={14} />
+                        <span>{[location?.city, location?.country].filter(Boolean).join(', ') || '—'}</span>
+                    </Space>
+                    <Tag color={isLinked ? 'green' : 'red'} style={{ fontSize: 10, lineHeight: '16px', marginInlineEnd: 0 }}>
+                        {isLinked ? 'Linked' : 'Not Linked'}
+                    </Tag>
+                </Space>
+            );
+        },
     },
     {
         title: 'Host',

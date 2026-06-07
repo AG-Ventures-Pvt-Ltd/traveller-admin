@@ -75,6 +75,18 @@ const INDIAN_STATES = [
     { code: 'WB', name: 'West Bengal' },
 ];
 
+const POPULAR_COUNTRIES = [
+    'India', 'Nepal', 'Bhutan', 'Sri Lanka', 'Maldives',
+    'Thailand', 'Vietnam', 'Indonesia', 'Malaysia', 'Singapore',
+    'Japan', 'China', 'South Korea', 'Mongolia',
+    'United Arab Emirates', 'Turkey', 'Jordan', 'Egypt', 'Saudi Arabia',
+    'France', 'Italy', 'Spain', 'Greece', 'Switzerland', 'Austria', 'Norway', 'Iceland',
+    'United Kingdom', 'Germany', 'Netherlands', 'Portugal', 'Croatia',
+    'United States', 'Canada', 'Mexico', 'Peru', 'Brazil', 'Argentina', 'Colombia',
+    'Kenya', 'Tanzania', 'South Africa', 'Morocco', 'Rwanda',
+    'Australia', 'New Zealand', 'Fiji',
+];
+
 // ---------- SuggestedCategories ----------
 
 interface SuggestedCategoriesProps {
@@ -228,6 +240,7 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
     const [selectedCityId, setSelectedCityId] = useState<string | undefined>(undefined);
     const [citySearch, setCitySearch] = useState('');
     const [addForm] = Form.useForm<CityFormData>();
+    const [country, setCountry] = useState<string>(trip?.location?.country || 'India');
 
     const { data: citiesData, isLoading: citiesLoading } = useQuery({
         queryKey: ['cities'],
@@ -245,16 +258,17 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
             setMode(initialMode);
             setSelectedCityId(undefined);
             setCitySearch('');
+            setCountry(trip?.location?.country || 'India');
             addForm.resetFields();
             if (prefillCityName) {
                 addForm.setFieldsValue({ name: prefillCityName });
             }
         }
-    }, [open, initialMode, prefillCityName, addForm]);
+    }, [open, initialMode, prefillCityName, addForm, trip?.location?.country]);
 
     const { mutate: updateTripLocation, isPending: locationUpdating } = useMutation({
-        mutationFn: async ({ city: cityName, state, coordinates }: { city: string; state: string; coordinates: number[] }) => {
-            const { data } = await baseAPI.patch(api.updateTripLocation(trip._id), { city: cityName, state, coordinates });
+        mutationFn: async ({ city: cityName, state, coordinates, country: ctry }: { city: string; state: string; coordinates: number[]; country: string }) => {
+            const { data } = await baseAPI.patch(api.updateTripLocation(trip._id), { city: cityName, state, coordinates, country: ctry });
             return data as { data: { location: Trip['location'] } };
         },
         onSuccess: (data) => {
@@ -280,6 +294,7 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
                 city: variables.name,
                 state: stateName,
                 coordinates: variables.location.coordinates,
+                country,
             });
         },
         onError: (err) => {
@@ -296,10 +311,20 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
             city: city.name,
             state: stateName,
             coordinates: city.location?.coordinates || [],
+            country,
         });
     };
 
     const handleAddCity = (values: CityFormData) => {
+        if (country !== 'India') {
+            updateTripLocation({
+                city: values.name,
+                state: values.stateCode,
+                coordinates: [values.lng, values.lat],
+                country,
+            });
+            return;
+        }
         addCity({
             name: values.name,
             stateCode: values.stateCode,
@@ -338,6 +363,18 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
             width={520}
         >
             <div style={{ marginTop: 16 }}>
+                <div style={{ marginBottom: 16 }}>
+                    <Text strong style={{ display: 'block', marginBottom: 4 }}>Country</Text>
+                    <Select
+                        showSearch
+                        style={{ width: '100%' }}
+                        value={country}
+                        onChange={setCountry}
+                        options={POPULAR_COUNTRIES.map(c => ({ value: c, label: c }))}
+                        placeholder="Select country"
+                    />
+                </div>
+
                 <Radio.Group
                     value={mode}
                     onChange={e => setMode(e.target.value as 'link' | 'add')}
@@ -346,11 +383,18 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
                     buttonStyle="solid"
                 >
                     <Radio.Button value="link">Link existing city</Radio.Button>
-                    <Radio.Button value="add">Add new city</Radio.Button>
+                    <Radio.Button value="add">{country === 'India' ? 'Add new city' : 'Set location'}</Radio.Button>
                 </Radio.Group>
 
                 {mode === 'link' && (
                     <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                        {country !== 'India' && (
+                            <Alert
+                                type="info"
+                                showIcon
+                                message="City database contains Indian cities only. The selected country will still be saved to this trip."
+                            />
+                        )}
                         <Select
                             showSearch
                             style={{ width: '100%' }}
@@ -386,23 +430,29 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
                         </Form.Item>
                         <Form.Item
                             name="stateCode"
-                            label="State"
+                            label={country === 'India' ? 'State' : 'State / Province'}
                             rules={[{ required: true, message: 'State is required' }]}
                         >
-                            <Select
-                                showSearch
-                                placeholder="Select a state"
-                                optionFilterProp="label"
-                                options={INDIAN_STATES.map(s => ({ value: s.code, label: `${s.name} (${s.code})` }))}
-                            />
+                            {country === 'India' ? (
+                                <Select
+                                    showSearch
+                                    placeholder="Select a state"
+                                    optionFilterProp="label"
+                                    options={INDIAN_STATES.map(s => ({ value: s.code, label: `${s.name} (${s.code})` }))}
+                                />
+                            ) : (
+                                <Input placeholder="e.g. Bavaria, New South Wales" />
+                            )}
                         </Form.Item>
-                        <Form.Item
-                            name="pincode"
-                            label="Pincode (optional)"
-                            rules={[{ pattern: /^\d{6}$/, message: 'Enter a valid 6-digit pincode' }]}
-                        >
-                            <Input placeholder="e.g. 175131" maxLength={6} />
-                        </Form.Item>
+                        {country === 'India' && (
+                            <Form.Item
+                                name="pincode"
+                                label="Pincode (optional)"
+                                rules={[{ pattern: /^\d{6}$/, message: 'Enter a valid 6-digit pincode' }]}
+                            >
+                                <Input placeholder="e.g. 175131" maxLength={6} />
+                            </Form.Item>
+                        )}
                         <Row gutter={12}>
                             <Col span={12}>
                                 <Form.Item
@@ -423,14 +473,16 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
                                 </Form.Item>
                             </Col>
                         </Row>
-                        <Form.Item name="aliases" label="Aliases (optional)" extra="Comma-separated alternate names">
-                            <Input placeholder="e.g. Manāli, Old Manali" />
-                        </Form.Item>
+                        {country === 'India' && (
+                            <Form.Item name="aliases" label="Aliases (optional)" extra="Comma-separated alternate names">
+                                <Input placeholder="e.g. Manāli, Old Manali" />
+                            </Form.Item>
+                        )}
                         <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                             <Space>
                                 <Button onClick={onClose}>Cancel</Button>
                                 <Button type="primary" htmlType="submit" loading={isPending}>
-                                    Add City &amp; Link
+                                    {country === 'India' ? 'Add City & Link' : 'Set Location'}
                                 </Button>
                             </Space>
                         </Form.Item>

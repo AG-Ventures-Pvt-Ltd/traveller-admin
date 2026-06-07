@@ -271,9 +271,9 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
             const { data } = await baseAPI.patch(api.updateTripLocation(trip._id), { city: cityName, state, coordinates, country: ctry });
             return data as { data: { location: Trip['location'] } };
         },
-        onSuccess: (data) => {
+        onSuccess: (data, variables) => {
             message.success('Trip location updated!');
-            onTripUpdate?.({ ...trip, location: data.data.location });
+            onTripUpdate?.({ ...trip, location: { ...data.data.location, country: variables.country } });
             onClose();
         },
         onError: () => message.error('Failed to update trip location.'),
@@ -316,15 +316,6 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
     };
 
     const handleAddCity = (values: CityFormData) => {
-        if (country !== 'India') {
-            updateTripLocation({
-                city: values.name,
-                state: values.stateCode,
-                coordinates: [values.lng, values.lat],
-                country,
-            });
-            return;
-        }
         addCity({
             name: values.name,
             stateCode: values.stateCode,
@@ -526,13 +517,13 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
     const hasCoordinates = !!(trip.location?.coordinates?.length);
 
     const { mutate: updateTripLocation, isPending: locationUpdating } = useMutation({
-        mutationFn: async ({ city: cityName, state, coordinates }: { city: string; state: string; coordinates: number[] }) => {
-            const { data } = await baseAPI.patch(api.updateTripLocation(trip._id), { city: cityName, state, coordinates });
+        mutationFn: async ({ city: cityName, state, coordinates, country }: { city: string; state: string; coordinates: number[]; country?: string }) => {
+            const { data } = await baseAPI.patch(api.updateTripLocation(trip._id), { city: cityName, state, coordinates, country });
             return data as { data: { location: Trip['location'] } };
         },
-        onSuccess: (data) => {
+        onSuccess: (data, variables) => {
             message.success('Trip location linked!');
-            onTripUpdate?.({ ...trip, location: data.data.location });
+            onTripUpdate?.({ ...trip, location: { ...data.data.location, ...(variables.country && { country: variables.country }) } });
             setLinked(true);
         },
         onError: () => message.error('Failed to update trip location.'),
@@ -545,6 +536,7 @@ const SuggestedLocation: React.FC<SuggestedLocationProps> = ({ trip, onTripUpdat
             city: matchedCity.name,
             state: stateName,
             coordinates: matchedCity.location?.coordinates || [],
+            country: trip.location?.country,
         });
     };
 

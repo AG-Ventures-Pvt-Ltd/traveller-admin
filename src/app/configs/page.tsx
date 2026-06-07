@@ -402,24 +402,23 @@ const CitiesTab: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCity, setEditingCity] = useState<City | null>(null);
     const [search, setSearch] = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(20);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['cities'],
+        queryKey: ['cities', page, limit, search],
         queryFn: async () => {
-            const { data } = await baseAPI.get(api.getCities);
+            const { data } = await baseAPI.get(api.getCities, {
+                params: { page, limit, ...(search && { search }) },
+            });
             return data.data;
         },
         refetchOnWindowFocus: false,
     });
 
     const cities: City[] = data?.cities || [];
-
-    const filtered = cities.filter(
-        (c) =>
-            !search ||
-            c.name.toLowerCase().includes(search.toLowerCase()) ||
-            c.stateCode.toLowerCase().includes(search.toLowerCase())
-    );
+    const totalItems: number = data?.totalItems ?? 0;
 
     const { mutate: deleteCity } = useMutation({
         mutationFn: async (id: string) => {
@@ -444,12 +443,16 @@ const CitiesTab: React.FC = () => {
         setModalOpen(true);
     };
 
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        setPage(1);
+    };
+
     const columns: TableColumnsType<City> = [
         {
             title: 'City',
             dataIndex: 'name',
             key: 'name',
-            sorter: (a, b) => a.name.localeCompare(b.name),
             render: (name: string) => <Text strong>{name}</Text>,
         },
         {
@@ -458,10 +461,6 @@ const CitiesTab: React.FC = () => {
             key: 'stateCode',
             width: 110,
             render: (code: string) => <Tag>{code}</Tag>,
-            filters: [...new Set(cities.map((c) => c.stateCode))]
-                .sort()
-                .map((code) => ({ text: code, value: code })),
-            onFilter: (value, record) => record.stateCode === value,
         },
         {
             title: 'Pincode',
@@ -540,13 +539,15 @@ const CitiesTab: React.FC = () => {
                 }}
             >
                 <Input.Search
-                    placeholder="Search by name or state code…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by name, state code or alias…"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onSearch={handleSearch}
                     style={{ maxWidth: 320 }}
                     allowClear
+                    onClear={() => handleSearch('')}
                 />
-                <Text type="secondary">{filtered.length} cities</Text>
+                <Text type="secondary">{totalItems} cities</Text>
                 <Button type="primary" icon={<PlusCircle size={14} />} onClick={handleAdd}>
                     Add City
                 </Button>
@@ -554,11 +555,18 @@ const CitiesTab: React.FC = () => {
 
             <Table
                 columns={columns}
-                dataSource={filtered}
+                dataSource={cities}
                 loading={isLoading}
                 rowKey="_id"
                 size="small"
-                pagination={{ pageSize: 20 }}
+                pagination={{
+                    current: page,
+                    pageSize: limit,
+                    total: totalItems,
+                    onChange: (p) => setPage(p),
+                    showSizeChanger: false,
+                    showTotal: (total, range) => `${range[0]}–${range[1]} of ${total}`,
+                }}
                 scroll={{ x: 700 }}
             />
 

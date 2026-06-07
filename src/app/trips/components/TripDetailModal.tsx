@@ -473,11 +473,9 @@ const TripLocationModal: React.FC<TripLocationModalProps> = ({
                                 </Form.Item>
                             </Col>
                         </Row>
-                        {country === 'India' && (
-                            <Form.Item name="aliases" label="Aliases (optional)" extra="Comma-separated alternate names">
-                                <Input placeholder="e.g. Manāli, Old Manali" />
-                            </Form.Item>
-                        )}
+                        <Form.Item name="aliases" label="Aliases (optional)" extra="Comma-separated alternate names">
+                            <Input placeholder="e.g. Manāli, Old Manali" />
+                        </Form.Item>
                         <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
                             <Space>
                                 <Button onClick={onClose}>Cancel</Button>

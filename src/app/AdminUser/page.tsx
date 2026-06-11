@@ -7,13 +7,14 @@ import {
 } from 'antd';
 import type { TableProps, TablePaginationConfig } from 'antd';
 import {
-  Search, MoreVertical, Plus, Trash2, Edit2, RefreshCw
+  Search, MoreVertical, Plus, Trash2, Edit2, RefreshCw, KeyRound
 } from 'lucide-react';
 import { AddAdminModal } from './components/addAdminModal';
 import { EditAdminModal } from './components/editAdminModal';
 import { useGetData } from '../../services/useGetData';
 import { api } from '../../common/constants/api.urls';
 import { DeleteAdminModal } from './components/deleteAdminModal';
+import { ResetPasswordModal } from './components/resetPasswordModal';
 import { Admin } from './constant';
 
 
@@ -34,6 +35,7 @@ const AdminUser = () => {
   const [addModal, setAddModal] = useState(false);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [deleteModal, setDeleteModal] = useState<{ visible: boolean; user: Admin | null }>({ visible: false, user: null });
+  const [resetModal, setResetModal] = useState<{ visible: boolean; user: Admin | null }>({ visible: false, user: null });
 
   const { data, refetch, isFetching } = useGetData({
     key: ['admins'],
@@ -75,6 +77,10 @@ const AdminUser = () => {
 
   const handleDeleteUser = (user: Admin) => {
     setDeleteModal({ visible: true, user });
+  };
+
+  const handleResetPassword = (user: Admin) => {
+    setResetModal({ visible: true, user });
   };
 
   const handleBulkDelete = () => {
@@ -150,6 +156,16 @@ const AdminUser = () => {
                   </Space>
                 ),
                 onClick: () => handleEditPermissions(record)
+              },
+              {
+                key: 'reset-password',
+                label: (
+                  <Space>
+                    <KeyRound size={14} />
+                    Reset Password
+                  </Space>
+                ),
+                onClick: () => handleResetPassword(record)
               },
               {
                 type: 'divider'
@@ -276,6 +292,7 @@ const AdminUser = () => {
         <EditAdminModal editModal={editModal} setEditModal={setEditModal} ALL_PERMISSIONS={ALL_PERMISSIONS} onSuccess={refetch} />
         <AddAdminModal addModal={addModal} setAddModal={setAddModal} ALL_PERMISSIONS={ALL_PERMISSIONS} />
         <DeleteAdminModal setAdmins={setAdmins} deleteModal={deleteModal} setDeleteModal={setDeleteModal} onSuccess={refetch} />
+        <ResetPasswordModal resetModal={resetModal} setResetModal={setResetModal} />
       </div>
   );
 };

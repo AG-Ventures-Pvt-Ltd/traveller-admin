@@ -5,6 +5,7 @@ export const api = {
     getAdminUser: '/api/admin/v1/users/all',
     deleteAdminUser: '/api/admin/v1/users/delete',
     updateAdminUserPermissions: (id: string) => `/api/admin/v1/users/${id}/permissions`,
+    resetAdminUserPassword: (id: string) => `/api/admin/v1/users/${id}/reset-password`,
 
     getErrorLogs: '/api/admin/v1/errors/logs',
 
@@ -98,6 +99,10 @@ export const api = {
     updateGlobalTravelerStats: '/api/admin/v1/config/traveler-stats/global',
     updateTripTravelerStats: (slug: string) => `/api/admin/v1/config/traveler-stats/trip/${slug}`,
     deleteTripTravelerStats: (slug: string) => `/api/admin/v1/config/traveler-stats/trip/${slug}`,
+
+    // Explore States (landing page "Explore by Destination")
+    getExploreStates: '/api/admin/v1/config/explore-states',
+    updateExploreStates: '/api/admin/v1/config/explore-states',
 
     // Wallet
     addWalletCash: (userId: string) => `/api/admin/v1/users/${userId}/wallet/add-cash`,

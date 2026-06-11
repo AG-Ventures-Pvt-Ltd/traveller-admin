@@ -24,7 +24,7 @@ import {
     Switch,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users, Compass } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
@@ -1743,6 +1743,182 @@ const TravelerStatsTab: React.FC = () => {
     );
 };
 
+// ── Explore States Tab ────────────────────────────────────────────────────────
+
+interface ExploreState {
+    stateCode: string;
+    name: string;
+    imageUrl: string;
+}
+
+const ExploreStatesTab: React.FC = () => {
+    const [form] = Form.useForm();
+    const [addVisible, setAddVisible] = useState(false);
+    const queryClient = useQueryClient();
+
+    const { data: states = [], isLoading } = useQuery({
+        queryKey: ['explore-states'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getExploreStates);
+            return (data.data?.exploreStates || []) as ExploreState[];
+        },
+    });
+
+    const { mutate: save, isPending } = useMutation({
+        mutationFn: async (exploreStates: ExploreState[]) => {
+            const { data } = await baseAPI.put(api.updateExploreStates, { exploreStates });
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Explore states updated!');
+            queryClient.invalidateQueries({ queryKey: ['explore-states'] });
+            setAddVisible(false);
+            form.resetFields();
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to update explore states'),
+    });
+
+    const chosenCodes = new Set(states.map((s) => s.stateCode));
+    const availableStates = INDIAN_STATES.filter((s) => !chosenCodes.has(s.code));
+
+    const handleAdd = (values: { stateCode: string; imageUrl: string }) => {
+        const meta = INDIAN_STATES.find((s) => s.code === values.stateCode);
+        if (!meta) return;
+        save([...states, { stateCode: meta.code, name: meta.name, imageUrl: values.imageUrl.trim() }]);
+    };
+
+    const handleRemove = (stateCode: string) => {
+        save(states.filter((s) => s.stateCode !== stateCode));
+    };
+
+    const columns: TableColumnsType<ExploreState> = [
+        {
+            title: 'Image',
+            dataIndex: 'imageUrl',
+            key: 'imageUrl',
+            width: 90,
+            render: (url: string) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={url}
+                    alt=""
+                    style={{ width: 64, height: 40, objectFit: 'cover', borderRadius: 6 }}
+                />
+            ),
+        },
+        { title: 'State', dataIndex: 'name', key: 'name' },
+        {
+            title: 'Code',
+            dataIndex: 'stateCode',
+            key: 'stateCode',
+            width: 80,
+            render: (code: string) => <Tag color="blue">{code}</Tag>,
+        },
+        {
+            title: 'Image URL',
+            dataIndex: 'imageUrl',
+            key: 'url',
+            ellipsis: true,
+            render: (url: string) => (
+                <Text type="secondary" style={{ fontSize: 12 }} copyable>
+                    {url}
+                </Text>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            width: 100,
+            render: (_, record) => (
+                <Popconfirm
+                    title="Remove this state?"
+                    onConfirm={() => handleRemove(record.stateCode)}
+                    okText="Remove"
+                    okButtonProps={{ danger: true }}
+                >
+                    <Button danger size="small" icon={<Trash2 size={14} />} loading={isPending} />
+                </Popconfirm>
+            ),
+        },
+    ];
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Text type="secondary">
+                    States shown in the landing page <strong>Explore by Destination</strong> section. Ordering on the
+                    site is automatic — by live trip count (highest first).
+                </Text>
+                <Button
+                    type="primary"
+                    icon={<Plus size={16} />}
+                    onClick={() => setAddVisible(true)}
+                    disabled={availableStates.length === 0}
+                >
+                    Add State
+                </Button>
+            </div>
+
+            <Spin spinning={isLoading}>
+                {states.length > 0 ? (
+                    <Table rowKey="stateCode" columns={columns} dataSource={states} pagination={false} />
+                ) : (
+                    <Empty description="No states selected yet" />
+                )}
+            </Spin>
+
+            <Card
+                style={{ marginTop: 24, background: 'rgba(24, 144, 255, 0.1)', border: '1px solid rgba(24, 144, 255, 0.2)' }}
+                size="small"
+            >
+                <Text style={{ color: '#1890ff', fontSize: 12 }}>
+                    💡 <strong>Tip:</strong> Pick a high-quality landscape image (e.g. an Unsplash URL) for each state.
+                    Recommended ~800×600. Only states with upcoming trips will show a live trip count to users.
+                </Text>
+            </Card>
+
+            <Modal
+                title="Add Explore State"
+                open={addVisible}
+                onCancel={() => {
+                    setAddVisible(false);
+                    form.resetFields();
+                }}
+                onOk={() => form.submit()}
+                confirmLoading={isPending}
+                okText="Add"
+                width={480}
+            >
+                <Form form={form} layout="vertical" onFinish={handleAdd} style={{ marginTop: 16 }}>
+                    <Form.Item
+                        name="stateCode"
+                        label="State"
+                        rules={[{ required: true, message: 'Please select a state' }]}
+                    >
+                        <Select
+                            showSearch
+                            placeholder="Select a state"
+                            optionFilterProp="label"
+                            options={availableStates.map((s) => ({ value: s.code, label: `${s.name} (${s.code})` }))}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        name="imageUrl"
+                        label="Image URL"
+                        rules={[
+                            { required: true, message: 'Image URL is required' },
+                            { type: 'url', message: 'Enter a valid URL' },
+                        ]}
+                    >
+                        <Input placeholder="https://images.unsplash.com/..." />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
+};
+
 // ── Main Configs Page ─────────────────────────────────────────────────────────
 
 export default function ConfigsPage() {
@@ -1806,6 +1982,16 @@ export default function ConfigsPage() {
                 </Space>
             ),
             children: <TravelerStatsTab />,
+        },
+        {
+            key: 'explorestates',
+            label: (
+                <Space>
+                    <Compass size={16} />
+                    Explore States
+                </Space>
+            ),
+            children: <ExploreStatesTab />,
         },
     ];
 

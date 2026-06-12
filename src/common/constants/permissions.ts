@@ -5,6 +5,7 @@ export const PERMISSIONS = {
   BOOKINGS: 'bookings',
   PRODUCTS: 'trips',
   ORDERS: 'stories',
+  BLOGS: 'blogs',
   PAYMENTS: 'payments',
   USER_SUPPORT: 'usersupport',
   SETTINGS: 'settings',

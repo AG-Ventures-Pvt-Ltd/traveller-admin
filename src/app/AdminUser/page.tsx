@@ -21,7 +21,7 @@ import { Admin } from './constant';
 const { Title, Text } = Typography;
 
 const ALL_PERMISSIONS = [
-  'dashboard', 'users', 'hosts', 'bookings', 'trips', 'stories',
+  'dashboard', 'users', 'hosts', 'bookings', 'trips', 'stories', 'blogs',
   'payments', 'usersupport', 'settings', 'adminusers',
   'errorlogs', 'apilogs', 'apianalytics', 'serverhealth', 'configs', 'coupons', 'emails', 'locationanalytics',
 ]

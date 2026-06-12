@@ -114,4 +114,13 @@ export const api = {
 
     // Location Analytics
     getLocationAnalytics: '/api/admin/v1/location-analytics',
+
+    // Blogs
+    getBlogs: '/api/admin/v1/blogs',
+    getBlogById: (id: string) => `/api/admin/v1/blogs/${id}`,
+    createBlog: '/api/admin/v1/blogs',
+    updateBlog: (id: string) => `/api/admin/v1/blogs/${id}`,
+    deleteBlog: (id: string) => `/api/admin/v1/blogs/${id}`,
+    toggleBlogVisibility: (id: string) => `/api/admin/v1/blogs/${id}/visibility`,
+    toggleBlogPublish: (id: string) => `/api/admin/v1/blogs/${id}/publish`,
 } as const;

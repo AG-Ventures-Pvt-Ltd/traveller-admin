@@ -115,6 +115,9 @@ export const api = {
     // Location Analytics
     getLocationAnalytics: '/api/admin/v1/location-analytics',
 
+    // Trip Analytics
+    getTripAnalyticsTraffic: '/api/admin/v1/trip-analytics/traffic',
+
     // Blogs
     getBlogs: '/api/admin/v1/blogs',
     getBlogById: (id: string) => `/api/admin/v1/blogs/${id}`,

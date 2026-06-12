@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Home, Users, ShoppingCart, Shield, Package, CreditCard,
-  Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail, BarChart2, MapPin, BookOpen
+  Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail, BarChart2, MapPin, BookOpen, TrendingUp
 } from 'lucide-react';
 import { PERMISSIONS, Permission } from '@/common/constants/permissions';
 
@@ -134,6 +134,12 @@ export const MenuItems: PermissionedItem[] = [
         icon: <MapPin size={16} />,
         label: 'Locations',
         permission: PERMISSIONS.LOCATION_ANALYTICS,
+      },
+      {
+        key: 'tripAnalytics',
+        icon: <TrendingUp size={16} />,
+        label: 'Trip Analytics',
+        permission: PERMISSIONS.TRIP_ANALYTICS,
       },
     ],
   },

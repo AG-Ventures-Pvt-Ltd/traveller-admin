@@ -19,6 +19,7 @@ export const PERMISSIONS = {
   COUPONS: 'coupons',
   EMAILS: 'emails',
   LOCATION_ANALYTICS: 'locationanalytics',
+  TRIP_ANALYTICS: 'tripanalytics',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

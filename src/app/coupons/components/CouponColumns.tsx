@@ -14,10 +14,13 @@ export const getCouponColumns = (
         title: 'Code',
         dataIndex: 'code',
         key: 'code',
-        render: (code: string) => (
-            <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1890ff', fontSize: 14 }}>{code}</span>
+        render: (code: string, record: Coupon) => (
+            <Space direction="vertical" size={2}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1890ff', fontSize: 14 }}>{code}</span>
+                {record.visibility === 'secret' && <Tag color="purple" style={{ fontSize: 11 }}>Secret</Tag>}
+            </Space>
         ),
-        width: 140,
+        width: 150,
     },
     {
         title: 'Description',
@@ -98,12 +101,16 @@ export const getCouponColumns = (
     },
     {
         title: 'Status',
-        dataIndex: 'isActive',
-        key: 'isActive',
-        render: (isActive: boolean) => (
-            <Tag color={isActive ? 'success' : 'error'}>{isActive ? 'Active' : 'Inactive'}</Tag>
+        key: 'status',
+        render: (_, record: Coupon) => (
+            <Space direction="vertical" size={2}>
+                <Tag color={record.isActive ? 'success' : 'error'}>{record.isActive ? 'Active' : 'Inactive'}</Tag>
+                {record.incompatibleWith?.includes('wondrrCash') && (
+                    <Tag color="orange" style={{ fontSize: 11 }}>No WondrrCash</Tag>
+                )}
+            </Space>
         ),
-        width: 90,
+        width: 120,
     },
     {
         title: 'Actions',

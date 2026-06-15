@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { usePostData } from '../../../services/usePostData';
 import { usePutData } from '../../../services/usePutData';
 import { api } from '../../../common/constants/api.urls';
-import { Coupon, DISCOUNT_TYPES } from '../constants';
+import { Coupon, DISCOUNT_TYPES, VISIBILITY_OPTIONS, INCOMPATIBLE_WITH_OPTIONS } from '../constants';
 
 interface CouponFormModalProps {
     open: boolean;
@@ -27,6 +27,8 @@ interface CouponFormValues {
     maxDiscountAmount?: number;
     startDate?: Dayjs;
     endDate: Dayjs;
+    visibility: 'public' | 'secret';
+    incompatibleWith: string[];
 }
 
 export const CouponFormModal: React.FC<CouponFormModalProps> = ({ open, onClose, onSuccess, coupon }) => {
@@ -78,6 +80,8 @@ export const CouponFormModal: React.FC<CouponFormModalProps> = ({ open, onClose,
                 maxDiscountAmount: coupon.maxDiscountAmount ?? undefined,
                 startDate: dayjs(coupon.startDate),
                 endDate: dayjs(coupon.endDate),
+                visibility: coupon.visibility ?? 'public',
+                incompatibleWith: coupon.incompatibleWith ?? [],
             });
         } else if (open && !coupon) {
             form.resetFields();
@@ -184,6 +188,19 @@ export const CouponFormModal: React.FC<CouponFormModalProps> = ({ open, onClose,
                         </Form.Item>
                     )}
                 </div>
+
+                <Form.Item name="visibility" label="Visibility" initialValue="public">
+                    <Select options={VISIBILITY_OPTIONS} />
+                </Form.Item>
+
+                <Form.Item name="incompatibleWith" label="Cannot be used with">
+                    <Select
+                        mode="multiple"
+                        options={INCOMPATIBLE_WITH_OPTIONS}
+                        placeholder="Select incompatible discount types"
+                        allowClear
+                    />
+                </Form.Item>
             </Form>
         </Modal>
     );

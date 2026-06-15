@@ -16,6 +16,8 @@ export interface Coupon {
     endDate: string;
     minOrderAmount: number;
     maxDiscountAmount: number | null;
+    visibility: 'public' | 'secret';
+    incompatibleWith: ('wondrrCash' | 'referral' | 'promo')[];
     isActive: boolean;
     createdBy: string;
     createdAt: string;
@@ -53,4 +55,15 @@ export const COUPON_STATUS_OPTIONS = [
 export const CREATED_BY_OPTIONS = [
     { label: 'Admin', value: 'admin' },
     { label: 'Host', value: 'host' },
+];
+
+export const VISIBILITY_OPTIONS = [
+    { label: 'Public (shown in list)', value: 'public' },
+    { label: 'Secret (manual entry only)', value: 'secret' },
+];
+
+export const INCOMPATIBLE_WITH_OPTIONS = [
+    { label: 'Wondrr Cash', value: 'wondrrCash' },
+    { label: 'Referral Bonus', value: 'referral' },
+    { label: 'Promo', value: 'promo' },
 ];

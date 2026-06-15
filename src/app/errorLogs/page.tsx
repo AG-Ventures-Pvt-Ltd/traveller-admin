@@ -7,8 +7,7 @@ import { api } from '../../common/constants/api.urls';
 import ErrorLogsTable from './components/ErrorLogTable';
 import ErrorLogDetailModal from './components/ErrorLogDetailModal';
 import { errorLogColumns } from './components/errorLogsColumns';
-import { ErrorLog,  } from './constant';
-import { dataTagErrorSymbol } from '@tanstack/react-query';
+import { ErrorLog } from './constant';
 
 const { Title, Text } = Typography;
 
@@ -20,10 +19,13 @@ const ErrorLogs = () => {
     const [selectedErrorLog, setSelectedErrorLog] = useState<ErrorLog | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
-    // Using DUMMY_ERROR_LOGS data directly
     const { data: errorLogsData, isLoading } = useGetData({
         url: api.getErrorLogs,
-        key: ['dfd']
+        key: ['errorLogs'],
+        params: {
+            page: pagination.current,
+            limit: pagination.pageSize,
+        },
     });
 
     
@@ -61,12 +63,12 @@ const ErrorLogs = () => {
                 <Card style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                     <ErrorLogsTable
                         columns={errorLogColumns}
-                        data={errorLogsData?.logs as ErrorLog[] || []}
-                        loading={false}
+                        data={errorLogsData?.data?.logs as ErrorLog[] || []}
+                        loading={isLoading}
                         onRow={handleRowClick}
                         pagination={{
                             ...pagination,
-                            total: errorLogsData?.total || 0,
+                            total: errorLogsData?.data?.total || 0,
                             showSizeChanger: true,
                             showQuickJumper: true,
                             showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} error logs`,

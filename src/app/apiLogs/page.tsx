@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react';
-import { Typography, Card, ConfigProvider, theme } from 'antd';
+import { Typography, Card, ConfigProvider, theme, Switch, Space } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
 import { useGetData } from '../../services/useGetData';
 import { api } from '../../common/constants/api.urls';
@@ -18,6 +18,7 @@ const ApiLogs = () => {
     });
     const [selectedApiLog, setSelectedApiLog] = useState<APILog | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [errorsOnly, setErrorsOnly] = useState(false);
 
     const { data: apiLogsData, isLoading } = useGetData({
         key: ['apiLogs'],
@@ -25,6 +26,7 @@ const ApiLogs = () => {
         params: {
             page: pagination.current,
             limit: pagination.pageSize,
+            ...(errorsOnly && { statusNe: 200 }),
         }
     });
 
@@ -63,6 +65,17 @@ const ApiLogs = () => {
                 </Text>
 
                 <Card style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                    <Space style={{ marginBottom: 16 }}>
+                        <Switch
+                            checked={errorsOnly}
+                            onChange={(checked) => {
+                                setErrorsOnly(checked);
+                                setPagination((p) => ({ ...p, current: 1 }));
+                            }}
+                        />
+                        <Text style={{ color: '#8c8c8c' }}>Show only errors (status ≠ 200)</Text>
+                    </Space>
+
                     <ApiLogsTable
                         columns={apiLogColumns}
                         data={apiLogsData?.data.logs || []}

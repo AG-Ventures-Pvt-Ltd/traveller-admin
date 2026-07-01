@@ -79,7 +79,7 @@ const POPULAR_COUNTRIES = [
     'India', 'Nepal', 'Bhutan', 'Sri Lanka', 'Maldives',
     'Thailand', 'Vietnam', 'Indonesia', 'Malaysia', 'Singapore',
     'Japan', 'China', 'South Korea', 'Mongolia',
-    'United Arab Emirates', 'Turkey', 'Jordan', 'Egypt', 'Saudi Arabia',
+    'United Arab Emirates', 'Turkey', 'Georgia', 'Kazakhstan', 'Jordan', 'Egypt', 'Saudi Arabia',
     'France', 'Italy', 'Spain', 'Greece', 'Switzerland', 'Austria', 'Norway', 'Iceland',
     'United Kingdom', 'Germany', 'Netherlands', 'Portugal', 'Croatia',
     'United States', 'Canada', 'Mexico', 'Peru', 'Brazil', 'Argentina', 'Colombia',

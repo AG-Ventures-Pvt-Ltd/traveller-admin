@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
     Card,
     Typography,
@@ -22,12 +23,15 @@ import {
     Spin,
     Empty,
     Switch,
+    Segmented,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users, Compass } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
+
+const CityPinsMap = dynamic(() => import('./components/CityPinsMap'), { ssr: false });
 
 const { Title, Text } = Typography;
 
@@ -37,6 +41,7 @@ interface City {
     _id: string;
     name: string;
     stateCode: string;
+    country?: string;
     pincode?: string;
     aliases?: string[];
     location?: { coordinates?: [number, number] };
@@ -267,6 +272,7 @@ const CityModal: React.FC<CityModalProps> = ({ open, city, onClose }) => {
                 form.setFieldsValue({
                     name: city.name,
                     stateCode: city.stateCode,
+                    country: city.country || 'India',
                     pincode: city.pincode || '',
                     aliases: city.aliases?.join(', ') || '',
                     lat: city.location?.coordinates?.[1],
@@ -274,6 +280,7 @@ const CityModal: React.FC<CityModalProps> = ({ open, city, onClose }) => {
                 });
             } else {
                 form.resetFields();
+                form.setFieldsValue({ country: 'India' });
             }
         }
     }, [open, city, form]);
@@ -282,6 +289,7 @@ const CityModal: React.FC<CityModalProps> = ({ open, city, onClose }) => {
         mutationFn: async (values: {
             name: string;
             stateCode: string;
+            country?: string;
             pincode?: string;
             aliases?: string;
             lat?: number;
@@ -290,6 +298,7 @@ const CityModal: React.FC<CityModalProps> = ({ open, city, onClose }) => {
             const payload = {
                 name: values.name.trim(),
                 stateCode: values.stateCode,
+                country: values.country?.trim() || 'India',
                 pincode: values.pincode ? String(values.pincode).trim() : null,
                 aliases: values.aliases
                     ? values.aliases
@@ -354,6 +363,10 @@ const CityModal: React.FC<CityModalProps> = ({ open, city, onClose }) => {
                     />
                 </Form.Item>
 
+                <Form.Item name="country" label="Country" initialValue="India">
+                    <Input placeholder="India" />
+                </Form.Item>
+
                 <Form.Item
                     name="pincode"
                     label="Pincode"
@@ -405,6 +418,7 @@ const CitiesTab: React.FC = () => {
     const [searchInput, setSearchInput] = useState('');
     const [page, setPage] = useState(1);
     const [limit] = useState(20);
+    const [view, setView] = useState<'table' | 'map'>('table');
 
     const { data, isLoading } = useQuery({
         queryKey: ['cities', page, limit, search],
@@ -419,6 +433,19 @@ const CitiesTab: React.FC = () => {
 
     const cities: City[] = data?.cities || [];
     const totalItems: number = data?.totalItems ?? 0;
+
+    // Unpaginated fetch (all cities) for pin-drop map view.
+    const { data: allCitiesData, isLoading: allCitiesLoading } = useQuery({
+        queryKey: ['cities-all'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getCities);
+            return data.data;
+        },
+        enabled: view === 'map',
+        refetchOnWindowFocus: false,
+    });
+
+    const allCities: City[] = allCitiesData?.cities || [];
 
     const { mutate: deleteCity } = useMutation({
         mutationFn: async (id: string) => {
@@ -461,6 +488,13 @@ const CitiesTab: React.FC = () => {
             key: 'stateCode',
             width: 110,
             render: (code: string) => <Tag>{code}</Tag>,
+        },
+        {
+            title: 'Country',
+            dataIndex: 'country',
+            key: 'country',
+            width: 110,
+            render: (country: string) => <Text>{country || 'India'}</Text>,
         },
         {
             title: 'Pincode',
@@ -546,6 +580,15 @@ const CitiesTab: React.FC = () => {
                     style={{ maxWidth: 320 }}
                     allowClear
                     onClear={() => handleSearch('')}
+                    disabled={view === 'map'}
+                />
+                <Segmented
+                    value={view}
+                    onChange={(v) => setView(v as 'table' | 'map')}
+                    options={[
+                        { label: 'Table', value: 'table' },
+                        { label: 'Map', value: 'map' },
+                    ]}
                 />
                 <Text type="secondary">{totalItems} cities</Text>
                 <Button type="primary" icon={<PlusCircle size={14} />} onClick={handleAdd}>
@@ -553,22 +596,28 @@ const CitiesTab: React.FC = () => {
                 </Button>
             </div>
 
-            <Table
-                columns={columns}
-                dataSource={cities}
-                loading={isLoading}
-                rowKey="_id"
-                size="small"
-                pagination={{
-                    current: page,
-                    pageSize: limit,
-                    total: totalItems,
-                    onChange: (p) => setPage(p),
-                    showSizeChanger: false,
-                    showTotal: (total, range) => `${range[0]}–${range[1]} of ${total}`,
-                }}
-                scroll={{ x: 700 }}
-            />
+            {view === 'map' ? (
+                <Spin spinning={allCitiesLoading}>
+                    <CityPinsMap cities={allCities} />
+                </Spin>
+            ) : (
+                <Table
+                    columns={columns}
+                    dataSource={cities}
+                    loading={isLoading}
+                    rowKey="_id"
+                    size="small"
+                    pagination={{
+                        current: page,
+                        pageSize: limit,
+                        total: totalItems,
+                        onChange: (p) => setPage(p),
+                        showSizeChanger: false,
+                        showTotal: (total, range) => `${range[0]}–${range[1]} of ${total}`,
+                    }}
+                    scroll={{ x: 700 }}
+                />
+            )}
 
             <CityModal
                 open={modalOpen}
@@ -1779,11 +1828,15 @@ const ExploreStatesTab: React.FC = () => {
             message.error(err?.response?.data?.message || 'Failed to update explore states'),
     });
 
+    // "International" is a reserved special entry — shows trips where country !== India instead of an Indian state.
+    const INTERNATIONAL_OPTION = { code: 'INTL', name: 'International' };
+    const selectableStates = [...INDIAN_STATES, INTERNATIONAL_OPTION];
+
     const chosenCodes = new Set(states.map((s) => s.stateCode));
-    const availableStates = INDIAN_STATES.filter((s) => !chosenCodes.has(s.code));
+    const availableStates = selectableStates.filter((s) => !chosenCodes.has(s.code));
 
     const handleAdd = (values: { stateCode: string; imageUrl: string }) => {
-        const meta = INDIAN_STATES.find((s) => s.code === values.stateCode);
+        const meta = selectableStates.find((s) => s.code === values.stateCode);
         if (!meta) return;
         save([...states, { stateCode: meta.code, name: meta.name, imageUrl: values.imageUrl.trim() }]);
     };

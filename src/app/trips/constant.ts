@@ -138,4 +138,5 @@ export interface Trip {
     metaDescription?: string;
     views?: Record<string, number>;
     shares?: Record<string, number>;
+    hasAdminReview?: boolean;
 }

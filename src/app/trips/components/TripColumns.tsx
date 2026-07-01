@@ -9,6 +9,7 @@ import { Trip } from '../constant';
 const STATUS_COLORS: Record<string, string> = {
     in_review: 'orange',
     published: 'green',
+    archived: 'default',
 };
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -80,8 +81,23 @@ export const columns = ({ handlePublish }: ColumnOptions): TableProps<Trip>['col
         filters: [
             { text: 'In Review', value: 'in_review' },
             { text: 'Published', value: 'published' },
+            { text: 'Archived', value: 'archived' },
         ],
         onFilter: (value, record) => record.status === value,
+    },
+    {
+        title: 'Admin Review',
+        dataIndex: 'hasAdminReview',
+        key: 'hasAdminReview',
+        width: 120,
+        render: (has: boolean) => (
+            <Tag color={has ? 'green' : 'red'}>{has ? 'Yes' : 'No'}</Tag>
+        ),
+        filters: [
+            { text: 'Yes', value: true },
+            { text: 'No', value: false },
+        ],
+        onFilter: (value, record) => !!record.hasAdminReview === value,
     },
     {
         title: 'Type',

@@ -18,6 +18,7 @@ const TripsPage = () => {
     const [limit] = useState(10);
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchText, setSearchText] = useState('');
+    const [hostFilter, setHostFilter] = useState('');
     const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
     const [tripModalVisible, setTripModalVisible] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
@@ -29,6 +30,7 @@ const TripsPage = () => {
         limit,
         ...(statusFilter !== 'all' && { status: statusFilter }),
         ...(searchText && { search: searchText }),
+        ...(hostFilter && { hostId: hostFilter }),
     };
 
     const { data: tripsResponse, isLoading, refetch } = useGetData({
@@ -36,6 +38,17 @@ const TripsPage = () => {
         url: api.getTrips,
         params,
     });
+
+    const { data: hostsResponse } = useGetData({
+        key: ['hosts-for-trip-filter'],
+        url: api.getHosts,
+        params: {},
+    });
+
+    const hostOptions = (
+        (hostsResponse as { data?: { data?: { _id: string; fullName?: string; username?: string }[] } } | undefined)
+            ?.data?.data || []
+    ).map((h) => ({ value: h._id, label: h.fullName || h.username || h._id }));
 
     // API shape: { data: { data: { data: Trip[], totalItems: number } } }
     const tripsPayload = (tripsResponse as { data?: { data?: Trip[]; totalItems?: number } } | undefined)?.data;
@@ -77,6 +90,7 @@ const TripsPage = () => {
         setPage(1);
         setStatusFilter('all');
         setSearchText('');
+        setHostFilter('');
     };
 
     return (
@@ -92,7 +106,7 @@ const TripsPage = () => {
                         Trips Management
                     </Title>
                     <Text type="secondary">
-                        Review and publish trips — showing in_review and published trips
+                        Review and publish trips — showing all trips except draft and deleted
                     </Text>
                 </div>
 
@@ -105,6 +119,9 @@ const TripsPage = () => {
                         setSearchText={(v) => { setSearchText(v); setPage(1); }}
                         statusFilter={statusFilter}
                         setStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
+                        hostFilter={hostFilter}
+                        setHostFilter={(v) => { setHostFilter(v); setPage(1); }}
+                        hostOptions={hostOptions}
                         onRefresh={refetch}
                         onReset={handleReset}
                         loading={isLoading}

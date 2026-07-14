@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
   Card, Typography, Table, Tag, Button, Space, Input, Select,
-  Modal, message, Tooltip, ConfigProvider, theme, Switch,
+  Modal, message, Tooltip, ConfigProvider, theme, Switch, Tabs,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, EyeInvisibleOutlined,
@@ -14,6 +14,7 @@ import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
+import TopicApprovalBoard from './components/TopicApprovalBoard';
 
 const { Title, Text } = Typography;
 
@@ -185,66 +186,85 @@ export default function BlogsPage() {
     <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
       <div className="p-4 flex flex-col gap-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <BookOutlined className="text-blue-400 text-xl" />
-            <Title level={4} className="!text-white !m-0">Blogs</Title>
-            <Tag color="blue">{total} total</Tag>
-          </div>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => router.push('/blogs/new')}
-          >
-            New Blog
-          </Button>
+        <div className="flex items-center gap-3">
+          <BookOutlined className="text-blue-400 text-xl" />
+          <Title level={4} className="!text-white !m-0">Blogs</Title>
         </div>
 
-        {/* Filters */}
-        <Card className="!bg-white/5 !border-white/10">
-          <div className="flex gap-3 flex-wrap">
-            <Input
-              placeholder="Search blogs..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => { setSearchText(e.target.value); setPage(1); }}
-              className="max-w-xs"
-              allowClear
-            />
-            <Select
-              value={statusFilter}
-              onChange={(v) => { setStatusFilter(v); setPage(1); }}
-              className="w-36"
-              options={[
-                { label: 'All', value: 'all' },
-                { label: 'Published', value: 'published' },
-                { label: 'Draft', value: 'draft' },
-              ]}
-            />
-            <Button onClick={() => { setSearchText(''); setStatusFilter('all'); setPage(1); }}>
-              Reset
-            </Button>
-          </div>
-        </Card>
+        <Tabs
+          defaultActiveKey="all"
+          items={[
+            {
+              key: 'all',
+              label: 'All Blogs',
+              children: (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <Tag color="blue">{total} total</Tag>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => router.push('/blogs/new')}
+                    >
+                      New Blog
+                    </Button>
+                  </div>
 
-        {/* Table */}
-        <Card className="!bg-white/5 !border-white/10">
-          <Table
-            dataSource={blogs}
-            columns={columns}
-            loading={isLoading}
-            rowKey="_id"
-            pagination={{
-              current: page,
-              pageSize: limit,
-              total,
-              onChange: setPage,
-              showSizeChanger: false,
-              showTotal: (t) => `${t} blogs`,
-            }}
-            className="[&_.ant-table]:!bg-transparent [&_.ant-table-thead_th]:!bg-white/10 [&_.ant-table-row]:!bg-transparent [&_.ant-table-row:hover_td]:!bg-white/5"
-          />
-        </Card>
+                  {/* Filters */}
+                  <Card className="!bg-white/5 !border-white/10">
+                    <div className="flex gap-3 flex-wrap">
+                      <Input
+                        placeholder="Search blogs..."
+                        prefix={<SearchOutlined />}
+                        value={searchText}
+                        onChange={(e) => { setSearchText(e.target.value); setPage(1); }}
+                        className="max-w-xs"
+                        allowClear
+                      />
+                      <Select
+                        value={statusFilter}
+                        onChange={(v) => { setStatusFilter(v); setPage(1); }}
+                        className="w-36"
+                        options={[
+                          { label: 'All', value: 'all' },
+                          { label: 'Published', value: 'published' },
+                          { label: 'Draft', value: 'draft' },
+                        ]}
+                      />
+                      <Button onClick={() => { setSearchText(''); setStatusFilter('all'); setPage(1); }}>
+                        Reset
+                      </Button>
+                    </div>
+                  </Card>
+
+                  {/* Table */}
+                  <Card className="!bg-white/5 !border-white/10">
+                    <Table
+                      dataSource={blogs}
+                      columns={columns}
+                      loading={isLoading}
+                      rowKey="_id"
+                      pagination={{
+                        current: page,
+                        pageSize: limit,
+                        total,
+                        onChange: setPage,
+                        showSizeChanger: false,
+                        showTotal: (t) => `${t} blogs`,
+                      }}
+                      className="[&_.ant-table]:!bg-transparent [&_.ant-table-thead_th]:!bg-white/10 [&_.ant-table-row]:!bg-transparent [&_.ant-table-row:hover_td]:!bg-white/5"
+                    />
+                  </Card>
+                </div>
+              ),
+            },
+            {
+              key: 'topics',
+              label: 'Topic Approvals',
+              children: <TopicApprovalBoard />,
+            },
+          ]}
+        />
       </div>
 
       <Modal

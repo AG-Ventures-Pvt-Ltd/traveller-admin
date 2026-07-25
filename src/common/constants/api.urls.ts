@@ -83,6 +83,12 @@ export const api = {
     toggleCoupon: (id: string) => `/api/admin/v1/coupons/${id}/toggle`,
     getCouponUsages: (id: string) => `/api/admin/v1/coupons/${id}/usages`,
 
+    // Links
+    getLinks: '/api/admin/v1/links',
+    createLink: '/api/admin/v1/links',
+    updateLink: (shortCode: string) => `/api/admin/v1/links/${shortCode}`,
+    deleteLink: (shortCode: string) => `/api/admin/v1/links/${shortCode}`,
+
     // Active Locations
     getActiveLocations: '/api/admin/v1/config/active-locations',
     addActiveLocation: '/api/admin/v1/config/active-locations/add',

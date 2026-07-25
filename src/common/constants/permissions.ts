@@ -20,6 +20,7 @@ export const PERMISSIONS = {
   EMAILS: 'emails',
   LOCATION_ANALYTICS: 'locationanalytics',
   TRIP_ANALYTICS: 'tripanalytics',
+  LINKS: 'links',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

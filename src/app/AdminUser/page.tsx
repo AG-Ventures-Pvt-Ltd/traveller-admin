@@ -16,15 +16,12 @@ import { api } from '../../common/constants/api.urls';
 import { DeleteAdminModal } from './components/deleteAdminModal';
 import { ResetPasswordModal } from './components/resetPasswordModal';
 import { Admin } from './constant';
+import { PERMISSIONS } from '@/common/constants/permissions';
 
 
 const { Title, Text } = Typography;
 
-const ALL_PERMISSIONS = [
-  'dashboard', 'users', 'hosts', 'bookings', 'trips', 'stories', 'blogs',
-  'payments', 'usersupport', 'settings', 'adminusers',
-  'errorlogs', 'apilogs', 'apianalytics', 'serverhealth', 'configs', 'coupons', 'emails', 'locationanalytics',
-]
+const ALL_PERMISSIONS = Object.values(PERMISSIONS)
 
 const AdminUser = () => {
   const [admins, setAdmins] = useState<Admin[]>([]);

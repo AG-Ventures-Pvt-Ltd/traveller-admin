@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Home, Users, ShoppingCart, Shield, Package, CreditCard,
-  Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail, BarChart2, MapPin, BookOpen, TrendingUp
+  Headset, AlertTriangle, Activity, Server, Building2, Settings, Tag, Mail, BarChart2, MapPin, BookOpen, TrendingUp, Link2
 } from 'lucide-react';
 import { PERMISSIONS, Permission } from '@/common/constants/permissions';
 
@@ -73,6 +73,12 @@ export const MenuItems: PermissionedItem[] = [
         icon: <Tag size={16} />,
         label: 'Coupons',
         permission: PERMISSIONS.COUPONS,
+      },
+      {
+        key: 'links',
+        icon: <Link2 size={16} />,
+        label: 'Links',
+        permission: PERMISSIONS.LINKS,
       },
     ],
   },

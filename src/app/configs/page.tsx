@@ -24,9 +24,10 @@ import {
     Empty,
     Switch,
     Segmented,
+    Divider,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users, Compass, CreditCard } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Compass, Settings } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
@@ -1898,6 +1899,38 @@ const TravelerStatsTab: React.FC = () => {
     );
 };
 
+// ── Platform Settings Tab (Signup Bonus + Payment Gateway + Traveler Stats) ────
+// Each section below owns its own query key and mutations, so they save independently.
+
+const PlatformSettingsTab: React.FC = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+            <Text strong style={{ color: '#fff', fontSize: 16, display: 'block', marginBottom: 16 }}>
+                Signup Bonus
+            </Text>
+            <SignupBonusTab />
+        </div>
+
+        <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+
+        <div>
+            <Text strong style={{ color: '#fff', fontSize: 16, display: 'block', marginBottom: 16 }}>
+                Payment Gateway
+            </Text>
+            <PaymentGatewayTab />
+        </div>
+
+        <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+
+        <div>
+            <Text strong style={{ color: '#fff', fontSize: 16, display: 'block', marginBottom: 16 }}>
+                Traveler Stats
+            </Text>
+            <TravelerStatsTab />
+        </div>
+    </div>
+);
+
 // ── Explore States Tab ────────────────────────────────────────────────────────
 
 interface ExploreState {
@@ -2123,34 +2156,14 @@ export default function ConfigsPage() {
             children: <ActiveLocationsTab />,
         },
         {
-            key: 'signupbonus',
+            key: 'platformsettings',
             label: (
                 <Space>
-                    <Gift size={16} />
-                    Signup Bonus
+                    <Settings size={16} />
+                    Platform Settings
                 </Space>
             ),
-            children: <SignupBonusTab />,
-        },
-        {
-            key: 'paymentgateway',
-            label: (
-                <Space>
-                    <CreditCard size={16} />
-                    Payment Gateway
-                </Space>
-            ),
-            children: <PaymentGatewayTab />,
-        },
-        {
-            key: 'travelerstats',
-            label: (
-                <Space>
-                    <Users size={16} />
-                    Traveler Stats
-                </Space>
-            ),
-            children: <TravelerStatsTab />,
+            children: <PlatformSettingsTab />,
         },
         {
             key: 'explorestates',

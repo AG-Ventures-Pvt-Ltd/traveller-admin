@@ -26,7 +26,7 @@ import {
     Segmented,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users, Compass } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Gift, Users, Compass, CreditCard } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
@@ -1524,6 +1524,112 @@ const SignupBonusTab: React.FC = () => {
     );
 };
 
+// ── Payment Gateway Tab ───────────────────────────────────────────────────────
+
+type PaymentGateway = 'razorpay' | 'cashfree';
+
+interface PaymentGatewayData {
+    paymentGateway: {
+        active: PaymentGateway;
+    };
+}
+
+const GATEWAY_LABELS: Record<PaymentGateway, string> = {
+    razorpay: 'Razorpay',
+    cashfree: 'Cashfree',
+};
+
+const PaymentGatewayTab: React.FC = () => {
+    const queryClient = useQueryClient();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['payment-gateway'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getPaymentGateway);
+            return data.data as PaymentGatewayData;
+        },
+    });
+
+    const { mutate: updateGateway, isPending } = useMutation({
+        mutationFn: async (active: PaymentGateway) => {
+            const { data } = await baseAPI.put(api.updatePaymentGateway, { active });
+            return data;
+        },
+        onSuccess: (_, active) => {
+            message.success(`New orders will now use ${GATEWAY_LABELS[active]}`);
+            queryClient.invalidateQueries({ queryKey: ['payment-gateway'] });
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to update payment gateway'),
+    });
+
+    const active = data?.paymentGateway?.active ?? 'razorpay';
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <Card style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <Spin spinning={isLoading}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: 16,
+                        }}
+                    >
+                        <div>
+                            <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                Active Gateway
+                            </Text>
+                            <div style={{ marginTop: 8 }}>
+                                <Tag
+                                    color={active === 'cashfree' ? 'blue' : 'purple'}
+                                    style={{ fontSize: 14, padding: '6px 14px' }}
+                                >
+                                    {GATEWAY_LABELS[active]}
+                                </Tag>
+                            </div>
+                        </div>
+
+                        <Space>
+                            {(['razorpay', 'cashfree'] as PaymentGateway[]).map((gateway) =>
+                                gateway === active ? (
+                                    <Button key={gateway} type="primary" disabled>
+                                        {GATEWAY_LABELS[gateway]} (Active)
+                                    </Button>
+                                ) : (
+                                    <Popconfirm
+                                        key={gateway}
+                                        title={`Switch to ${GATEWAY_LABELS[gateway]}?`}
+                                        description="New orders will start using this gateway immediately. Orders already in flight keep settling on the gateway they were created with."
+                                        onConfirm={() => updateGateway(gateway)}
+                                        okText="Switch"
+                                        okButtonProps={{ loading: isPending }}
+                                    >
+                                        <Button loading={isPending}>Use {GATEWAY_LABELS[gateway]}</Button>
+                                    </Popconfirm>
+                                )
+                            )}
+                        </Space>
+                    </div>
+                </Spin>
+            </Card>
+
+            <Card
+                style={{ background: 'rgba(24, 144, 255, 0.1)', border: '1px solid rgba(24, 144, 255, 0.2)' }}
+                size="small"
+            >
+                <Text style={{ color: '#1890ff', fontSize: 12 }}>
+                    💡 <strong>Tip:</strong> This only decides which gateway <em>new</em> orders use. Payments already
+                    in progress keep settling on whichever gateway they were created with, so switching never strands
+                    a pending payment.
+                </Text>
+            </Card>
+        </div>
+    );
+};
+
 // ── Traveler Stats Tab ────────────────────────────────────────────────────────
 
 const TravelerStatsTab: React.FC = () => {
@@ -2025,6 +2131,16 @@ export default function ConfigsPage() {
                 </Space>
             ),
             children: <SignupBonusTab />,
+        },
+        {
+            key: 'paymentgateway',
+            label: (
+                <Space>
+                    <CreditCard size={16} />
+                    Payment Gateway
+                </Space>
+            ),
+            children: <PaymentGatewayTab />,
         },
         {
             key: 'travelerstats',

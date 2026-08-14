@@ -100,6 +100,10 @@ export const api = {
     getSignupBonus: '/api/admin/v1/config/signup-bonus',
     updateSignupBonus: '/api/admin/v1/config/signup-bonus',
 
+    // Payment Gateway
+    getPaymentGateway: '/api/admin/v1/config/payment-gateway',
+    updatePaymentGateway: '/api/admin/v1/config/payment-gateway',
+
     // Traveler Stats
     getTravelerStats: '/api/admin/v1/config/traveler-stats',
     updateGlobalTravelerStats: '/api/admin/v1/config/traveler-stats/global',

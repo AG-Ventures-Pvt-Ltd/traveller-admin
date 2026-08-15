@@ -1341,6 +1341,7 @@ interface SignupBonusData {
     signupBonus: {
         amount: number;
         isEnabled: boolean;
+        expiryDays: number;
     };
 }
 
@@ -1358,7 +1359,7 @@ const SignupBonusTab: React.FC = () => {
     });
 
     const { mutate: updateBonus, isPending } = useMutation({
-        mutationFn: async (values: { amount: number; isEnabled: boolean }) => {
+        mutationFn: async (values: { amount: number; isEnabled: boolean; expiryDays: number }) => {
             const { data } = await baseAPI.put(api.updateSignupBonus, values);
             return data;
         },
@@ -1377,6 +1378,7 @@ const SignupBonusTab: React.FC = () => {
             form.setFieldsValue({
                 amount: data.signupBonus.amount,
                 isEnabled: data.signupBonus.isEnabled,
+                expiryDays: data.signupBonus.expiryDays,
             });
         }
     }, [editVisible, data, form]);
@@ -1393,7 +1395,7 @@ const SignupBonusTab: React.FC = () => {
                                 border: '1px solid rgba(255,255,255,0.1)',
                             }}
                         >
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
                                 <div>
                                     <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
                                         Bonus Amount
@@ -1413,6 +1415,14 @@ const SignupBonusTab: React.FC = () => {
                                         >
                                             {data.signupBonus.isEnabled ? 'ENABLED' : 'DISABLED'}
                                         </Tag>
+                                    </div>
+                                </div>
+                                <div>
+                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                        Expires After
+                                    </Text>
+                                    <div style={{ marginTop: 8, fontSize: 28, fontWeight: 600, color: '#1890ff' }}>
+                                        {data.signupBonus.expiryDays} days
                                     </div>
                                 </div>
                             </div>
@@ -1467,6 +1477,7 @@ const SignupBonusTab: React.FC = () => {
                         updateBonus({
                             amount: values.amount,
                             isEnabled: values.isEnabled,
+                            expiryDays: values.expiryDays,
                         });
                     }}
                     style={{ marginTop: 16 }}
@@ -1490,6 +1501,20 @@ const SignupBonusTab: React.FC = () => {
                             precision={0}
                             formatter={(value) => `₹${value}`}
                             parser={(value) => Number(value?.replace('₹', '') || '0') as any}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="expiryDays"
+                        label="Expires After (days)"
+                        rules={[{ required: true, message: 'Please enter expiry in days' }]}
+                    >
+                        <InputNumber
+                            min={1}
+                            max={3650}
+                            placeholder="e.g. 90"
+                            style={{ width: '100%' }}
+                            precision={0}
                         />
                     </Form.Item>
 

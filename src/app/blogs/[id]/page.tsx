@@ -10,6 +10,8 @@ import { useRouter, useParams } from 'next/navigation';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
 import { sanitizeHtml } from '@/common/utils/sanitizeHtml';
+import ImageInput from '@/common/ui/ImageInput';
+import RelatedTripsField from '../components/RelatedTripsField';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -35,6 +37,7 @@ interface Blog {
   metaDescription: string;
   isPublished: boolean;
   isVisible: boolean;
+  relatedTrips: string[];
   readTime: number;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +77,7 @@ export default function EditBlogPage() {
           metaDescription: b.metaDescription,
           coverImage: b.coverImage,
           isVisible: b.isVisible,
+          relatedTrips: b.relatedTrips || [],
         });
       } catch {
         setError('Failed to load blog');
@@ -283,6 +287,12 @@ export default function EditBlogPage() {
               </div>
             </Card>
 
+            <Card className="!bg-white/5 !border-white/10" title={<span className="text-gray-300">Related Trips</span>}>
+              <Form form={form} layout="vertical">
+                <RelatedTripsField />
+              </Form>
+            </Card>
+
             <Card className="!bg-white/5 !border-white/10" title={<span className="text-gray-300">Author</span>}>
               <Form form={form} layout="vertical">
                 <Form.Item name="authorName" label={<span className="text-gray-300 text-sm">Author Name</span>}>
@@ -302,8 +312,8 @@ export default function EditBlogPage() {
                 <Form.Item name="metaDescription" label={<span className="text-gray-300 text-sm">Meta Description</span>}>
                   <TextArea rows={3} maxLength={160} showCount className="!bg-white/10 !border-white/20 !text-white" />
                 </Form.Item>
-                <Form.Item name="coverImage" label={<span className="text-gray-300 text-sm">Cover Image URL</span>}>
-                  <Input placeholder="https://..." className="!bg-white/10 !border-white/20 !text-white" />
+                <Form.Item name="coverImage" label={<span className="text-gray-300 text-sm">Cover Image</span>}>
+                  <ImageInput text="Upload cover image" />
                 </Form.Item>
               </Form>
             </Card>

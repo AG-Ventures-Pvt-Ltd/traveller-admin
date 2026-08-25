@@ -27,6 +27,13 @@ const BATCH_STATUS_COLORS: Record<string, string> = {
     closed: 'default', cancelled: 'error', draft: 'default',
 };
 
+const TRIP_TYPE_OPTIONS = [
+    { value: 'group_tour', label: 'Group Tour' },
+    { value: 'group_trek', label: 'Group Trek' },
+    { value: 'bike_trip', label: 'Bike Trip' },
+    { value: 'group_run', label: 'Group Run' },
+];
+
 const BATCH_STATUS_OPTIONS = [
     { value: 'draft', label: 'Draft' },
     { value: 'available', label: 'Available' },
@@ -637,6 +644,19 @@ interface OverviewTabProps {
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => {
     const [locationEditOpen, setLocationEditOpen] = useState(false);
+
+    const { mutate: updateType, isPending: typeUpdating } = useMutation({
+        mutationFn: async (type: string) => {
+            const { data } = await baseAPI.patch(api.updateTripType(trip._id), { type });
+            return data as { data: { type: string } };
+        },
+        onSuccess: (data) => {
+            message.success('Trip type updated');
+            onTripUpdate?.({ ...trip, type: data.data.type });
+        },
+        onError: () => message.error('Failed to update trip type'),
+    });
+
     return (
     <Space direction="vertical" style={{ width: '100%' }} size="large">
         {trip.tripImages?.length ? (
@@ -654,7 +674,17 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ trip, onTripUpdate }) => {
             <Descriptions.Item label="Status" span={1}>
                 <Tag color={STATUS_COLORS[trip.status]}>{trip.status?.replace('_', ' ').toUpperCase()}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Type">{trip.type?.replace('_', ' ') || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Type">
+                <Select
+                    size="small"
+                    style={{ minWidth: 150 }}
+                    value={trip.type}
+                    options={TRIP_TYPE_OPTIONS}
+                    loading={typeUpdating}
+                    disabled={typeUpdating}
+                    onChange={(value: string) => updateType(value)}
+                />
+            </Descriptions.Item>
             <Descriptions.Item label="Difficulty">
                 <Tag color={DIFFICULTY_COLORS[trip.difficulty || '']}>{trip.difficulty?.toUpperCase()}</Tag>
             </Descriptions.Item>

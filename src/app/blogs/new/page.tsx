@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
 import { sanitizeHtml } from '@/common/utils/sanitizeHtml';
+import ImageInput from '@/common/ui/ImageInput';
+import RelatedTripsField from '../components/RelatedTripsField';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -197,6 +199,13 @@ export default function NewBlogPage() {
               </div>
             </Card>
 
+            {/* Related Trips */}
+            <Card className="!bg-white/5 !border-white/10" title={<span className="text-gray-300">Related Trips</span>}>
+              <Form form={form} layout="vertical">
+                <RelatedTripsField />
+              </Form>
+            </Card>
+
             {/* Author */}
             <Card className="!bg-white/5 !border-white/10" title={<span className="text-gray-300">Author</span>}>
               <Form form={form} layout="vertical">
@@ -235,11 +244,8 @@ export default function NewBlogPage() {
                     className="!bg-white/10 !border-white/20 !text-white"
                   />
                 </Form.Item>
-                <Form.Item name="coverImage" label={<span className="text-gray-300 text-sm">Cover Image URL</span>}>
-                  <Input
-                    placeholder="https://... or S3 path"
-                    className="!bg-white/10 !border-white/20 !text-white"
-                  />
+                <Form.Item name="coverImage" label={<span className="text-gray-300 text-sm">Cover Image</span>}>
+                  <ImageInput text="Upload cover image" />
                 </Form.Item>
               </Form>
             </Card>

@@ -57,6 +57,7 @@ export const api = {
     publishTrip: (id: string) => `/api/admin/v1/trips/${id}/publish`,
     updateTripCategories: (id: string) => `/api/admin/v1/trips/${id}/categories`,
     updateTripLocation: (id: string) => `/api/admin/v1/trips/${id}/location`,
+    updateTripType: (id: string) => `/api/admin/v1/trips/${id}/type`,
 
     // Trip Batches
     getTripBatches: (tripId: string) => `/api/admin/v1/trips/${tripId}/batches`,
@@ -136,4 +137,7 @@ export const api = {
     deleteBlog: (id: string) => `/api/admin/v1/blogs/${id}`,
     toggleBlogVisibility: (id: string) => `/api/admin/v1/blogs/${id}/visibility`,
     toggleBlogPublish: (id: string) => `/api/admin/v1/blogs/${id}/publish`,
+
+    // S3 Upload
+    getS3UploadUrl: '/api/client/v1/s3upload/geturl',
 } as const;

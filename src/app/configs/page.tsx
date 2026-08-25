@@ -1342,6 +1342,7 @@ interface SignupBonusData {
         amount: number;
         isEnabled: boolean;
         expiryDays: number;
+        minTripAmount: number;
     };
 }
 
@@ -1359,7 +1360,7 @@ const SignupBonusTab: React.FC = () => {
     });
 
     const { mutate: updateBonus, isPending } = useMutation({
-        mutationFn: async (values: { amount: number; isEnabled: boolean; expiryDays: number }) => {
+        mutationFn: async (values: { amount: number; isEnabled: boolean; expiryDays: number; minTripAmount: number }) => {
             const { data } = await baseAPI.put(api.updateSignupBonus, values);
             return data;
         },
@@ -1379,6 +1380,7 @@ const SignupBonusTab: React.FC = () => {
                 amount: data.signupBonus.amount,
                 isEnabled: data.signupBonus.isEnabled,
                 expiryDays: data.signupBonus.expiryDays,
+                minTripAmount: data.signupBonus.minTripAmount,
             });
         }
     }, [editVisible, data, form]);
@@ -1395,7 +1397,7 @@ const SignupBonusTab: React.FC = () => {
                                 border: '1px solid rgba(255,255,255,0.1)',
                             }}
                         >
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 32 }}>
                                 <div>
                                     <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
                                         Bonus Amount
@@ -1425,6 +1427,14 @@ const SignupBonusTab: React.FC = () => {
                                         {data.signupBonus.expiryDays} days
                                     </div>
                                 </div>
+                                <div>
+                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                        Min. Trip Amount to Redeem
+                                    </Text>
+                                    <div style={{ marginTop: 8, fontSize: 28, fontWeight: 600, color: '#1890ff' }}>
+                                        ₹{(data.signupBonus.minTripAmount ?? 0).toLocaleString('en-IN')}
+                                    </div>
+                                </div>
                             </div>
                         </Card>
 
@@ -1448,7 +1458,9 @@ const SignupBonusTab: React.FC = () => {
                         >
                             <Text style={{ color: '#1890ff', fontSize: 12 }}>
                                 💡 <strong>Tip:</strong> This bonus amount will be credited to new users who sign up. Users can see this
-                                in the app and use it for their first booking if enabled.
+                                in the app and use it for their first booking if enabled. Wondrr Cash (wallet balance, including this
+                                bonus) can only be redeemed once the trip amount reaches the minimum below — set it to ₹0 to remove
+                                that restriction.
                             </Text>
                         </Card>
                     </div>
@@ -1478,6 +1490,7 @@ const SignupBonusTab: React.FC = () => {
                             amount: values.amount,
                             isEnabled: values.isEnabled,
                             expiryDays: values.expiryDays,
+                            minTripAmount: values.minTripAmount,
                         });
                     }}
                     style={{ marginTop: 16 }}
@@ -1525,6 +1538,21 @@ const SignupBonusTab: React.FC = () => {
                         initialValue={false}
                     >
                         <Switch />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="minTripAmount"
+                        label="Min. Trip Amount to Redeem Wondrr Cash (₹)"
+                        rules={[{ required: true, message: 'Please enter the minimum trip amount' }]}
+                    >
+                        <InputNumber
+                            min={0}
+                            placeholder="e.g. 2000"
+                            style={{ width: '100%' }}
+                            precision={0}
+                            formatter={(value) => `₹${value}`}
+                            parser={(value) => Number(value?.replace('₹', '') || '0') as any}
+                        />
                     </Form.Item>
 
                     <Form.Item noStyle>

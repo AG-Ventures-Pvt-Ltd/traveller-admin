@@ -17,6 +17,7 @@ export const PERMISSIONS = {
   SERVER_HEALTH: 'serverhealth',
   CONFIGS: 'configs',
   COUPONS: 'coupons',
+  SIP_PLANS: 'sipplans',
   EMAILS: 'emails',
   LOCATION_ANALYTICS: 'locationanalytics',
   TRIP_ANALYTICS: 'tripanalytics',

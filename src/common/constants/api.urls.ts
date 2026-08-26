@@ -84,6 +84,13 @@ export const api = {
     toggleCoupon: (id: string) => `/api/admin/v1/coupons/${id}/toggle`,
     getCouponUsages: (id: string) => `/api/admin/v1/coupons/${id}/usages`,
 
+    // SIP Plans
+    getSipPlans: '/api/admin/v1/sip-plans',
+    createSipPlan: '/api/admin/v1/sip-plans',
+    updateSipPlan: (id: string) => `/api/admin/v1/sip-plans/${id}`,
+    toggleSipPlan: (id: string) => `/api/admin/v1/sip-plans/${id}/toggle`,
+    getSipPlanSubscribers: (id: string) => `/api/admin/v1/sip-plans/${id}/subscribers`,
+
     // Links
     getLinks: '/api/admin/v1/links',
     createLink: '/api/admin/v1/links',

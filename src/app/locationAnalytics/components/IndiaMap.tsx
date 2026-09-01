@@ -121,7 +121,7 @@ export default function IndiaMap({ stateBreakdown, totalSessions }: Props) {
                 attributionControl={false}
             >
                 <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${process.env.NEXT_PUBLIC_MAP_API}`}
                     attribution=""
                 />
                 {geojson && (

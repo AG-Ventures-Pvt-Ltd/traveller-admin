@@ -62,6 +62,8 @@ export const api = {
     // Trip Batches
     getTripBatches: (tripId: string) => `/api/admin/v1/trips/${tripId}/batches`,
     updateBatch: (tripId: string, batchId: string) => `/api/admin/v1/trips/${tripId}/batches/${batchId}`,
+    getHostBatchLocations: (hostId: string) => `/api/admin/v1/trips/batches/bulk/locations/${hostId}`,
+    bulkCreateBatches: '/api/admin/v1/trips/batches/bulk',
 
     // Admin Reviews
     getTripReviews: (tripId: string) => `/api/admin/v1/trips/${tripId}/reviews`,

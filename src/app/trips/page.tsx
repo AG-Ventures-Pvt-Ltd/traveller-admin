@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Typography, ConfigProvider, theme, Modal, message } from 'antd';
+import { Card, Typography, ConfigProvider, theme, Modal, message, Button } from 'antd';
+import { CalendarPlus } from 'lucide-react';
 import TripDetailModal from './components/TripDetailModal';
+import BulkBatchCreateModal from './components/BulkBatchCreateModal';
 import TripFilters from './components/TripFilters';
 import TripTable from './components/TripTable';
 import { columns } from './components/TripColumns';
@@ -24,6 +26,7 @@ const TripsPage = () => {
     const [modalLoading, setModalLoading] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [confirmTrip, setConfirmTrip] = useState<Trip | null>(null);
+    const [bulkBatchVisible, setBulkBatchVisible] = useState(false);
 
     const params: Record<string, unknown> = {
         page,
@@ -101,13 +104,18 @@ const TripsPage = () => {
             }}
         >
             <div style={{ padding: '24px', minHeight: '100vh', background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%)' }}>
-                <div style={{ marginBottom: '24px' }}>
-                    <Title level={2} style={{ color: '#fff', marginBottom: '8px' }}>
-                        Trips Management
-                    </Title>
-                    <Text type="secondary">
-                        Review and publish trips — showing all trips except draft and deleted
-                    </Text>
+                <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                        <Title level={2} style={{ color: '#fff', marginBottom: '8px' }}>
+                            Trips Management
+                        </Title>
+                        <Text type="secondary">
+                            Review and publish trips — showing all trips except draft and deleted
+                        </Text>
+                    </div>
+                    <Button icon={<CalendarPlus size={16} />} onClick={() => setBulkBatchVisible(true)}>
+                        Bulk Create Batches
+                    </Button>
                 </div>
 
                 <Card
@@ -179,6 +187,11 @@ const TripsPage = () => {
                 loading={modalLoading}
                 onPublish={handlePublish}
                 onTripUpdate={(updated) => setSelectedTrip(updated)}
+            />
+
+            <BulkBatchCreateModal
+                visible={bulkBatchVisible}
+                onClose={() => setBulkBatchVisible(false)}
             />
         </ConfigProvider>
     );

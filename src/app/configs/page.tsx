@@ -1579,12 +1579,19 @@ const SignupBonusTab: React.FC = () => {
 };
 
 // ── Payment Gateway Tab ───────────────────────────────────────────────────────
+// Two independent toggles sharing one config doc: 'payments' governs one-time
+// bookings/wallet top-ups, 'subscriptions' governs recurring SIP billing.
+// Kept separate because a gateway fine for one-time orders can have different
+// recurring-billing constraints (Razorpay's 7-day minimum interval breaks
+// Daily SIP — see sip.razorpay.service.js on the server).
 
 type PaymentGateway = 'razorpay' | 'cashfree';
+type GatewayScope = 'payments' | 'subscriptions';
 
 interface PaymentGatewayData {
     paymentGateway: {
         active: PaymentGateway;
+        subscriptionActive: PaymentGateway;
     };
 }
 
@@ -1593,8 +1600,25 @@ const GATEWAY_LABELS: Record<PaymentGateway, string> = {
     cashfree: 'Cashfree',
 };
 
-const PaymentGatewayTab: React.FC = () => {
+const GATEWAY_SCOPE_CONFIG: Record<
+    GatewayScope,
+    { field: keyof PaymentGatewayData['paymentGateway']; noun: string; tip: string }
+> = {
+    payments: {
+        field: 'active',
+        noun: 'orders',
+        tip: 'This only decides which gateway new orders use. Payments already in progress keep settling on whichever gateway they were created with, so switching never strands a pending payment.',
+    },
+    subscriptions: {
+        field: 'subscriptionActive',
+        noun: 'SIP subscriptions',
+        tip: "This only decides which gateway new SIP subscriptions use. Existing subscriptions keep billing on whichever gateway they were created with. Note: Razorpay can't bill more often than every 7 days, so Daily SIP is hidden on the client while Razorpay is active here.",
+    },
+};
+
+const PaymentGatewayTab: React.FC<{ scope: GatewayScope }> = ({ scope }) => {
     const queryClient = useQueryClient();
+    const { field, noun, tip } = GATEWAY_SCOPE_CONFIG[scope];
 
     const { data, isLoading } = useQuery({
         queryKey: ['payment-gateway'],
@@ -1606,18 +1630,18 @@ const PaymentGatewayTab: React.FC = () => {
 
     const { mutate: updateGateway, isPending } = useMutation({
         mutationFn: async (active: PaymentGateway) => {
-            const { data } = await baseAPI.put(api.updatePaymentGateway, { active });
+            const { data } = await baseAPI.put(api.updatePaymentGateway, { active, scope });
             return data;
         },
         onSuccess: (_, active) => {
-            message.success(`New orders will now use ${GATEWAY_LABELS[active]}`);
+            message.success(`New ${noun} will now use ${GATEWAY_LABELS[active]}`);
             queryClient.invalidateQueries({ queryKey: ['payment-gateway'] });
         },
         onError: (err: { response?: { data?: { message?: string } } }) =>
             message.error(err?.response?.data?.message || 'Failed to update payment gateway'),
     });
 
-    const active = data?.paymentGateway?.active ?? 'razorpay';
+    const active = data?.paymentGateway?.[field] ?? 'razorpay';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -1675,9 +1699,7 @@ const PaymentGatewayTab: React.FC = () => {
                 size="small"
             >
                 <Text style={{ color: '#1890ff', fontSize: 12 }}>
-                    💡 <strong>Tip:</strong> This only decides which gateway <em>new</em> orders use. Payments already
-                    in progress keep settling on whichever gateway they were created with, so switching never strands
-                    a pending payment.
+                    💡 <strong>Tip:</strong> {tip}
                 </Text>
             </Card>
         </div>
@@ -1968,9 +1990,18 @@ const PlatformSettingsTab: React.FC = () => (
 
         <div>
             <Text strong style={{ color: '#fff', fontSize: 16, display: 'block', marginBottom: 16 }}>
-                Payment Gateway
+                Payment Gateway — Bookings & Wallet
             </Text>
-            <PaymentGatewayTab />
+            <PaymentGatewayTab scope="payments" />
+        </div>
+
+        <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+
+        <div>
+            <Text strong style={{ color: '#fff', fontSize: 16, display: 'block', marginBottom: 16 }}>
+                Payment Gateway — SIP Subscriptions
+            </Text>
+            <PaymentGatewayTab scope="subscriptions" />
         </div>
 
         <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />

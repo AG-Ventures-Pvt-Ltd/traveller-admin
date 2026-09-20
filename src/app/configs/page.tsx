@@ -27,10 +27,11 @@ import {
     Divider,
 } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Compass, Settings } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, MapPin, Tags, Star, Plus, Navigation, Compass, Settings, Ticket } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import baseAPI from '@/services/baseApi';
 import { api } from '@/common/constants/api.urls';
+import type { Coupon } from '../coupons/constants';
 
 const CityPinsMap = dynamic(() => import('./components/CityPinsMap'), { ssr: false });
 
@@ -2195,6 +2196,154 @@ const ExploreStatesTab: React.FC = () => {
     );
 };
 
+// ── Promo Coupon Tab ──────────────────────────────────────────────────────────
+
+// One coupon is promoted on the landing page at a time. It is stored as a
+// reference to the coupon itself, so expiring or deactivating the coupon on the
+// Coupons page also takes the banner down — nothing to remember here.
+
+interface PromoCouponConfig {
+    couponId: Coupon | null;
+    isEnabled: boolean;
+    headline?: string;
+}
+
+const PromoCouponTab: React.FC = () => {
+    const [form] = Form.useForm();
+    const queryClient = useQueryClient();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['promo-coupon'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getPromoCoupon);
+            return data.data.promoCoupon as PromoCouponConfig;
+        },
+    });
+
+    // Only site-wide, public, unexpired coupons can be promoted — the server
+    // rejects anything else, so don't offer it in the picker either.
+    const { data: coupons = [], isLoading: couponsLoading } = useQuery({
+        queryKey: ['promotable-coupons'],
+        queryFn: async () => {
+            const { data } = await baseAPI.get(api.getCoupons, { params: { status: 'active', limit: 200 } });
+            const now = Date.now();
+            return (data.data.coupons as Coupon[]).filter(
+                (c) => c.visibility === 'public' && !c.tripApplicable && new Date(c.endDate).getTime() > now
+            );
+        },
+    });
+
+    const { mutate: save, isPending } = useMutation({
+        mutationFn: async (values: { couponId: string | null; isEnabled: boolean; headline?: string }) => {
+            const { data } = await baseAPI.put(api.updatePromoCoupon, {
+                couponId: values.couponId || null,
+                isEnabled: values.isEnabled,
+                headline: values.headline?.trim() || '',
+            });
+            return data;
+        },
+        onSuccess: () => {
+            message.success('Promo coupon updated successfully!');
+            queryClient.invalidateQueries({ queryKey: ['promo-coupon'] });
+        },
+        onError: (err: { response?: { data?: { message?: string } } }) =>
+            message.error(err?.response?.data?.message || 'Failed to update promo coupon'),
+    });
+
+    React.useEffect(() => {
+        if (data) {
+            form.setFieldsValue({
+                couponId: data.couponId?._id || null,
+                isEnabled: data.isEnabled,
+                headline: data.headline || '',
+            });
+        }
+    }, [data, form]);
+
+    const active = data?.isEnabled && data?.couponId ? data.couponId : null;
+
+    return (
+        <Spin spinning={isLoading}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Card
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 32 }}>
+                        <div>
+                            <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                Live on Landing Page
+                            </Text>
+                            <div style={{ marginTop: 8 }}>
+                                <Tag color={active ? 'green' : 'red'} style={{ fontSize: 12, padding: '6px 12px' }}>
+                                    {active ? 'SHOWING' : 'HIDDEN'}
+                                </Tag>
+                            </div>
+                        </div>
+                        <div>
+                            <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                Coupon Code
+                            </Text>
+                            <div style={{ marginTop: 8, fontSize: 22, fontWeight: 600, color: '#1890ff' }}>
+                                {active ? active.code : '—'}
+                            </div>
+                        </div>
+                        <div>
+                            <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>
+                                Runs Until
+                            </Text>
+                            <div style={{ marginTop: 8, fontSize: 16 }}>
+                                {active ? new Date(active.endDate).toLocaleDateString('en-IN') : '—'}
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card
+                    title={<span style={{ color: '#fff' }}>Promote a Coupon</span>}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                    <Form form={form} layout="vertical" onFinish={(values) => save(values)}>
+                        <Form.Item
+                            name="couponId"
+                            label="Coupon"
+                            extra="Only active, public, site-wide coupons that haven't expired can be promoted."
+                        >
+                            <Select
+                                allowClear
+                                showSearch
+                                loading={couponsLoading}
+                                placeholder="Select a coupon"
+                                optionFilterProp="label"
+                                options={coupons.map((c) => ({
+                                    value: c._id,
+                                    label: `${c.code} — ${c.description}`,
+                                }))}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="headline"
+                            label="Banner Headline"
+                            extra="Optional. Leave blank to use the coupon's own description."
+                            rules={[{ max: 60, message: 'Keep it under 60 characters' }]}
+                        >
+                            <Input placeholder="Monsoon sale — flat ₹500 off" maxLength={60} showCount />
+                        </Form.Item>
+
+                        <Form.Item name="isEnabled" label="Show on Landing Page" valuePropName="checked">
+                            <Switch />
+                        </Form.Item>
+
+                        <Button type="primary" htmlType="submit" loading={isPending}>
+                            Save
+                        </Button>
+                    </Form>
+                </Card>
+            </div>
+        </Spin>
+    );
+};
+
 // ── Main Configs Page ─────────────────────────────────────────────────────────
 
 export default function ConfigsPage() {
@@ -2248,6 +2397,16 @@ export default function ConfigsPage() {
                 </Space>
             ),
             children: <PlatformSettingsTab />,
+        },
+        {
+            key: 'promocoupon',
+            label: (
+                <Space>
+                    <Ticket size={16} />
+                    Promo Coupon
+                </Space>
+            ),
+            children: <PromoCouponTab />,
         },
         {
             key: 'explorestates',

@@ -120,6 +120,10 @@ export const api = {
     updateTripTravelerStats: (slug: string) => `/api/admin/v1/config/traveler-stats/trip/${slug}`,
     deleteTripTravelerStats: (slug: string) => `/api/admin/v1/config/traveler-stats/trip/${slug}`,
 
+    // Promo Coupon (landing page banner)
+    getPromoCoupon: '/api/admin/v1/config/promo-coupon',
+    updatePromoCoupon: '/api/admin/v1/config/promo-coupon',
+
     // Explore States (landing page "Explore by Destination")
     getExploreStates: '/api/admin/v1/config/explore-states',
     updateExploreStates: '/api/admin/v1/config/explore-states',

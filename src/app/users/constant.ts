@@ -67,5 +67,23 @@ export interface User {
   phone: string;
   isVerified: boolean;
   createdAt: string;
+  updatedAt?: string;
+  fullName?: string;
+  type?: string;
+  provider?: { type?: string; id?: string };
+  profile?: {
+    _id: string;
+    birthDate?: string;
+    bio?: string;
+    address?: { address?: string; city?: string; state?: string; country?: string; coordinates?: number[] };
+    mobileNumber?: number | null;
+    countryCode?: string;
+    emergencyContact?: { name?: string; contactNumber?: string; countryCode?: string };
+    referralCode?: string;
+    governmentId?: { type?: string; number?: string };
+    joinedTrips?: string[];
+    createdAt?: string;
+    updatedAt?: string;
+  };
 }
 

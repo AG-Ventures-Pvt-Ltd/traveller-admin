@@ -32,6 +32,7 @@ const TRIP_TYPE_OPTIONS = [
     { value: 'group_trek', label: 'Group Trek' },
     { value: 'bike_trip', label: 'Bike Trip' },
     { value: 'group_run', label: 'Group Run' },
+    { value: 'single_day_event', label: 'Single Day Group Event' },
 ];
 
 const BATCH_STATUS_OPTIONS = [

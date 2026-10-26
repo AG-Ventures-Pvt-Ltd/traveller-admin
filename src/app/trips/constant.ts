@@ -139,4 +139,5 @@ export interface Trip {
     views?: Record<string, number>;
     shares?: Record<string, number>;
     hasAdminReview?: boolean;
+    itineraryDaysCount?: number;
 }

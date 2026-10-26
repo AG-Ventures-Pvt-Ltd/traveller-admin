@@ -230,6 +230,7 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
                                 {hostTrips.map(t => (
                                     <Checkbox key={t._id} value={t._id}>
                                         {t.title} <Tag style={{ marginLeft: 4 }}>{t.status}</Tag>
+                                        <Tag color="blue">{t.itineraryDaysCount ?? 0} day{t.itineraryDaysCount === 1 ? '' : 's'}</Tag>
                                     </Checkbox>
                                 ))}
                             </Checkbox.Group>

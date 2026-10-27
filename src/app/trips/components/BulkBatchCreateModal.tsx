@@ -69,7 +69,7 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
     const { data: tripsResponse, isLoading: tripsLoading } = useGetData({
         key: ['trips-for-bulk-batch'],
         url: api.getTrips,
-        params: { limit: 500 },
+        params: { limit: 500, includeDraft: true },
         enabled: visible,
     });
 

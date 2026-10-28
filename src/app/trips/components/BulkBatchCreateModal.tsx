@@ -98,6 +98,24 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
     );
 
     const hostTrips = selectedHostId ? (hostGroups.get(selectedHostId)?.trips || []) : [];
+    const [daysFilter, setDaysFilter] = useState<number | undefined>();
+
+    const dayCountOptions = Array.from(new Set(hostTrips.map(t => t.itineraryDaysCount ?? 0)))
+        .sort((a, b) => a - b)
+        .map(d => ({
+            value: d,
+            label: `${d} day${d === 1 ? '' : 's'} (${hostTrips.filter(t => (t.itineraryDaysCount ?? 0) === d).length})`,
+        }));
+
+    const visibleTrips = daysFilter === undefined
+        ? hostTrips
+        : hostTrips.filter(t => (t.itineraryDaysCount ?? 0) === daysFilter);
+
+    // Picking a day count selects every matching trip, so no hidden trips stay selected.
+    const handleDaysFilterChange = (d: number | undefined) => {
+        setDaysFilter(d);
+        setSelectedTripIds(d === undefined ? [] : hostTrips.filter(t => (t.itineraryDaysCount ?? 0) === d).map(t => t._id));
+    };
 
     const { data: locationsResponse } = useGetData({
         key: ['host-batch-locations', selectedHostId],
@@ -113,6 +131,7 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
     const handleHostChange = (hostId: string) => {
         setSelectedHostId(hostId);
         setSelectedTripIds([]);
+        setDaysFilter(undefined);
         setMeetingPointRows([]);
         form.setFieldsValue({ dropPoint: [] });
     };
@@ -129,6 +148,7 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
         form.resetFields();
         setSelectedHostId('');
         setSelectedTripIds([]);
+        setDaysFilter(undefined);
         setMeetingPointRows([]);
     };
 
@@ -222,18 +242,28 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
                         {hostTrips.length === 0 ? (
                             <Empty description="No trips for this host" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                         ) : (
+                            <>
+                            <Select
+                                allowClear
+                                placeholder="Select all trips with itinerary days…"
+                                value={daysFilter}
+                                onChange={handleDaysFilterChange}
+                                options={dayCountOptions}
+                                style={{ width: '100%', marginBottom: 8 }}
+                            />
                             <Checkbox.Group
                                 value={selectedTripIds}
                                 onChange={(vals) => setSelectedTripIds(vals as string[])}
                                 style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 180, overflowY: 'auto' }}
                             >
-                                {hostTrips.map(t => (
+                                {visibleTrips.map(t => (
                                     <Checkbox key={t._id} value={t._id}>
                                         {t.title} <Tag style={{ marginLeft: 4 }}>{t.status}</Tag>
                                         <Tag color="blue">{t.itineraryDaysCount ?? 0} day{t.itineraryDaysCount === 1 ? '' : 's'}</Tag>
                                     </Checkbox>
                                 ))}
                             </Checkbox.Group>
+                            </>
                         )}
                     </Form.Item>
                 )}

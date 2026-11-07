@@ -70,6 +70,10 @@ export const api = {
     addReview: (tripId: string) => `/api/admin/v1/trips/${tripId}/reviews`,
     updateReview: (tripId: string, reviewId: string) => `/api/admin/v1/trips/${tripId}/reviews/${reviewId}`,
     deleteReview: (tripId: string, reviewId: string) => `/api/admin/v1/trips/${tripId}/reviews/${reviewId}`,
+
+    // Trip hotels
+    getTripHotels: (tripId: string) => `/api/admin/v1/trips/${tripId}/hotels`,
+    tripHotel: (tripId: string, hotelId: string) => `/api/admin/v1/trips/${tripId}/hotels/${hotelId}`,
     
     // Host Profile Reviews (GET and POST only)
     getProfileReviews: (hostId: string) => `/api/admin/v1/hosts/${hostId}/reviews`,

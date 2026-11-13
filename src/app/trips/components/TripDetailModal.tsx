@@ -882,6 +882,7 @@ interface BatchEditModalProps {
 interface BatchEditValues {
     status: string;
     externalBookedSeats: number;
+    addOnPrice: number;
     isCompleted: boolean;
 }
 
@@ -894,6 +895,7 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({ batch, tripId, onClose,
             form.setFieldsValue({
                 status: batch.status,
                 externalBookedSeats: batch.externalBookedSeats ?? 0,
+                addOnPrice: batch.addOnPrice ?? 0,
                 isCompleted: batch.isCompleted ?? false,
             });
         }
@@ -927,6 +929,13 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({ batch, tripId, onClose,
                     <Select options={BATCH_STATUS_OPTIONS} />
                 </Form.Item>
                 <Form.Item label="External Booked Seats" name="externalBookedSeats">
+                    <InputNumber min={0} style={{ width: '100%' }} />
+                </Form.Item>
+                <Form.Item
+                    label="Batch Add-on Price (₹ per person)"
+                    name="addOnPrice"
+                    extra="Added to every pricing tier for this date. Applies to new bookings only."
+                >
                     <InputNumber min={0} style={{ width: '100%' }} />
                 </Form.Item>
                 <Form.Item label="Mark as Completed" name="isCompleted" valuePropName="checked">
@@ -1009,6 +1018,10 @@ const BatchesTab: React.FC<{ tripId: string }> = ({ tripId }) => {
         {
             title: 'Ext. Booked', dataIndex: 'externalBookedSeats', key: 'ext',
             render: (v: number) => v ?? 0,
+        },
+        {
+            title: 'Add-on', dataIndex: 'addOnPrice', key: 'addOn',
+            render: (v?: number) => v ? `₹${v.toLocaleString('en-IN')}` : '—',
         },
         {
             title: 'Completed', dataIndex: 'isCompleted', key: 'done',

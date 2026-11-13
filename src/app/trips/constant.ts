@@ -80,6 +80,8 @@ export interface TripBatch {
     totalSeats: number;
     bookedSeats?: number;
     externalBookedSeats?: number;
+    /** Per-person price added to every pricing tier for this batch only */
+    addOnPrice?: number;
     isCompleted?: boolean;
     meetingPoint?: MeetingPoint[];
     dropPoint?: DropPoint[];

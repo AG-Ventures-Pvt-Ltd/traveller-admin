@@ -183,6 +183,7 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
             scheduleType: values.scheduleType,
             schedule,
             totalSeats: values.totalSeats,
+            addOnPrice: values.addOnPrice ?? 0,
             closeBookingDaysBefore: values.closeBookingDaysBefore,
             pointOfContact: { name: values.pocName, phone: values.pocPhone },
             meetingPoint: meetingPointRows.map(r => ({ location: r.location, pickupPrice: r.pickupPrice })),
@@ -310,6 +311,14 @@ const BulkBatchCreateModal: React.FC<BulkBatchCreateModalProps> = ({ visible, on
 
                 <Form.Item name="totalSeats" label="Total seats per batch" rules={[{ required: true, message: 'Required' }]}>
                     <InputNumber min={1} style={{ width: '100%' }} />
+                </Form.Item>
+
+                <Form.Item
+                    name="addOnPrice"
+                    label="Batch add-on price (₹ per person)"
+                    extra="Added to every pricing tier for each batch created here. Leave empty for none."
+                >
+                    <InputNumber min={0} style={{ width: '100%' }} placeholder="e.g. 500" />
                 </Form.Item>
 
                 <Form.Item
